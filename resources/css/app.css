@@ -28,6 +28,14 @@
     --color-accent-foreground: var(--color-white);
 }
 
+[x-cloak] {
+    display: none !important;
+}
+
+html {
+    background: #f8fafc;
+}
+
 @layer theme {
     .dark {
         --color-accent: var(--color-white);

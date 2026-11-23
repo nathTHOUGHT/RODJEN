@@ -1,28 +1,23 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-sm flex-col gap-2">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 mb-1 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                </a>
-                <div class="flex flex-col gap-6">
+    <body class="min-h-screen bg-slate-100 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
+        <main class="grid min-h-screen place-items-center p-6">
+            <div class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 bg-slate-900 px-8 py-7 text-white dark:border-slate-800">
+                    <a href="{{ route('home') }}" class="block" aria-label="{{ config('app.name', 'ISP Admin') }}">
+                        <span class="block text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">ISP Operations</span>
+                        <span class="mt-1 block text-xl font-semibold">Administration Panel</span>
+                    </a>
+                </div>
+
+                <div class="p-8">
                     {{ $slot }}
                 </div>
             </div>
-        </div>
-
-        @persist('toast')
-            <flux:toast.group>
-                <flux:toast />
-            </flux:toast.group>
-        @endpersist
+        </main>
 
         @fluxScripts
     </body>

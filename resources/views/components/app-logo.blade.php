@@ -2,16 +2,7 @@
     'sidebar' => false,
 ])
 
-@if($sidebar)
-    <flux:sidebar.brand :name="config('app.name', 'Laravel')" {{ $attributes }}>
-        <x-slot name="logo" class="flex aspect-square size-8 items-center justify-center rounded-md bg-accent-content text-accent-foreground">
-            <x-app-logo-icon class="size-5 fill-current text-white dark:text-black" />
-        </x-slot>
-    </flux:sidebar.brand>
-@else
-    <flux:brand :name="config('app.name', 'Laravel')" {{ $attributes }}>
-        <x-slot name="logo" class="flex aspect-square size-8 items-center justify-center rounded-md bg-accent-content text-accent-foreground">
-            <x-app-logo-icon class="size-5 fill-current text-white dark:text-black" />
-        </x-slot>
-    </flux:brand>
-@endif
+<a {{ $attributes->class(['block rounded-lg px-3 py-2 text-white']) }}>
+    <span class="block text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">ISP Operations</span>
+    <span class="mt-1 block text-sm font-semibold">Administration Panel</span>
+</a>

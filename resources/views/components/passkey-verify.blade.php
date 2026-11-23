@@ -49,7 +49,6 @@
             <div class="grid gap-2">
                 <flux:button
                     variant="outline"
-                    icon="finger-print"
                     class="w-full"
                     x-on:click="verify()"
                     x-bind:disabled="loading"

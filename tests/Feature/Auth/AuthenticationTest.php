@@ -3,6 +3,25 @@
 use App\Models\User;
 use Laravel\Fortify\Features;
 
+test('login screen uses the text-only admin presentation', function () {
+    config()->set([
+        'preview.enabled' => true,
+        'preview.username' => 'admin',
+        'preview.password' => 'admin',
+    ]);
+
+    $response = $this->get(route('login'));
+
+    $response
+        ->assertOk()
+        ->assertSee('Welcome back')
+        ->assertSee('Username')
+        ->assertSee('Password')
+        ->assertSee('data-test="login-button"', false)
+        ->assertDontSee('<img', false)
+        ->assertDontSee('<svg', false);
+});
+
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
 
