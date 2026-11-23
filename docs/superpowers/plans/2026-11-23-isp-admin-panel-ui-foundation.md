@@ -4,7 +4,7 @@
 
 **Goal:** Build a responsive, frontend-only ISP administration panel foundation for every supplied screenshot while preserving the starter application's existing authentication behavior.
 
-**Architecture:** Keep all business pages as server-rendered Blade views behind the existing auth and verified middleware, with no models, persistence, fake datasets, or business actions. Reuse small admin Blade components for headings, panels, empty tables, notices, and CSS-only charts; use Flux only where its free components fit without introducing decorative icons.
+**Architecture:** Keep all business pages as server-rendered Blade views behind one focused access middleware that accepts either a local database-free preview session or a real authenticated, verified Fortify user. Use one small preview-session controller plus configuration for the requested local admin/admin flow; business pages still have no models, persistence, fake datasets, or actions. Reuse small admin Blade components for headings, panels, empty tables, notices, and CSS-only charts; use Flux only where its free components fit without introducing decorative icons.
 
 **Tech Stack:** Laravel 13, Blade, Livewire 4 runtime, Flux UI Free 2, Tailwind CSS 4, Alpine supplied by Livewire/Flux, Pest 4, Vite.
 
@@ -12,18 +12,19 @@
 
 ## Global Constraints
 
-- Do not create database tables, migrations, Eloquent models, seeders, factories, policies, controllers, services, or API integrations.
+- Do not create database tables, migrations, Eloquent models, seeders, factories, policies, domain services, or API integrations. The only controller added in this phase is the focused local preview-session controller.
 - Do not add business logic for subscribers, billing, products, policies, payments, expenses, logs, MikroTik, messaging, scheduling, or integrations.
 - Do not copy customer records, prices, balances, dates, messages, credentials, statistics, or other exact data from the screenshots.
 - Do not add images, logos, avatars, decorative illustrations, or icons; use text and simple CSS shapes.
 - Preserve Fortify authentication, verification, password reset, two-factor authentication, passkeys, settings routes, CSRF protection, and logout.
+- Preview access must use a server-side session, rate-limited login endpoint, session regeneration, generic credential errors, and configuration values; never implement it as client-side authentication or enable it by default in production.
 - Do not install Composer or npm packages.
 - Keep light/dark appearance support and responsive behavior.
 - Page controls may open and close presentational modals, but no create, update, delete, import, export, connection, sync, or save operation may run.
 
 ## Review Focus
 
-1. Guests and unverified users must not reach any new administration route; Task 2 tests the full route matrix for both states.
+1. Guests and unverified users must not reach any new administration route, while a valid local preview session must work without a user record; Tasks 1 and 2 test all three states.
 2. Navigation must remain usable without icons and must mark nested sections clearly; Tasks 1 and 2 test text navigation and current-page headings.
 3. Frontend-only controls must never imply or trigger persistence; Tasks 3 through 7 test disabled action markers and the absence of business forms.
 4. Wide tables and dense forms must remain usable at narrow widths; Tasks 3 through 8 assert the shared horizontal-scroll and responsive-grid hooks.
@@ -34,6 +35,13 @@
 ### Task 1: Text-only authentication and application shell
 
 **Files:**
+- Create: app/Http/Controllers/PreviewSessionController.php
+- Create: app/Http/Middleware/EnsurePanelAccess.php
+- Create: config/preview.php
+- Create: tests/Feature/Auth/PreviewAuthenticationTest.php
+- Modify: .env.example
+- Modify: bootstrap/app.php
+- Modify: routes/web.php
 - Modify: resources/css/app.css
 - Modify: resources/views/layouts/auth/simple.blade.php
 - Modify: resources/views/pages/auth/login.blade.php
@@ -46,12 +54,28 @@
 - Modify: tests/Feature/DashboardTest.php
 
 **Interfaces:**
-- Consumes: Existing Fortify named routes, x-layouts::auth, x-layouts::app, authenticated User name/email, Flux scripts and appearance state.
-- Produces: A text-only responsive auth layout and authenticated shell whose slot remains the content boundary for every later page.
+- Consumes: Existing Fortify named routes, x-layouts::auth, x-layouts::app, optional authenticated User name/email, Flux scripts and appearance state.
+- Produces: POST preview.login and POST preview.logout; panel.access middleware; preview.user session payload; a text-only responsive auth layout and panel shell whose slot remains the content boundary for every later page.
 
-- [ ] **Step 1: Add failing presentation tests**
+- [ ] **Step 1: Add failing preview-authentication tests**
 
-Add tests named 'login screen uses the text-only admin presentation' and 'authenticated dashboard uses the text-only admin shell'. Assert the login response contains 'Welcome back', Email address, Password, and data-test="login-button"; assert the dashboard contains 'Administration Panel', Dashboard, and data-test="logout-button". Both responses must exclude literal <img and <svg markup.
+Create PreviewAuthenticationTest.php. With preview.enabled=true and configured admin/admin credentials, assert: the login page renders Username and Password without querying users; valid credentials redirect to dashboard, regenerate the session identifier, and store preview.user; invalid credentials redirect back with a generic username error and no preview session; dashboard redirects a guest to login; preview logout clears the session and redirects to login; preview login returns 404 when disabled. Use the real session and routes, not mocks.
+
+- [ ] **Step 2: Run the preview-authentication tests and confirm failure**
+
+Run: php artisan test --compact tests/Feature/Auth/PreviewAuthenticationTest.php
+
+Expected: FAIL because preview configuration, endpoints, middleware, and login mode do not exist.
+
+- [ ] **Step 3: Implement secure local preview access**
+
+Create config/preview.php with enabled, username, and password values read only from environment variables. Document disabled example configuration in .env.example; set the current untracked local .env to enable admin/admin for this workspace. PreviewSessionController validates username/password, rejects disabled access with 404, compares configured strings without logging them, applies a generic failure message, regenerates the session on success, and invalidates/regenerates the token on logout. Apply throttle:5,1 to preview.login.
+
+EnsurePanelAccess allows a preview.user session, allows a real authenticated verified Fortify user, redirects an unverified real user to verification.notice, and redirects all other requests to login. Register panel.access in bootstrap/app.php. Redirect / to login, protect dashboard with panel.access, and keep Fortify's existing routes available.
+
+- [ ] **Step 4: Add failing presentation tests**
+
+Add tests named 'login screen uses the text-only admin presentation' and 'preview session can visit the text-only admin shell'. Assert the preview login response contains 'Welcome back', Username, Password, and data-test="login-button"; assert a preview-authenticated dashboard contains 'Administration Panel', Dashboard, and data-test="logout-button". Both responses must exclude literal <img and <svg markup. Keep the existing Fortify email/password authentication tests green by allowing real verified users through panel.access.
 
 ~~~php
 $response
@@ -61,31 +85,31 @@ $response
     ->assertDontSee('<svg', false);
 ~~~
 
-- [ ] **Step 2: Run the focused tests and confirm failure**
+- [ ] **Step 5: Run the focused presentation tests and confirm failure**
 
 Run: php artisan test --compact tests/Feature/Auth/AuthenticationTest.php tests/Feature/DashboardTest.php
 
 Expected: FAIL because the starter shell still renders logo/icon SVG markup and lacks the new copy.
 
-- [ ] **Step 3: Implement the text-only layouts**
+- [ ] **Step 6: Implement the text-only layouts**
 
-Define restrained admin color tokens in app.css. Replace the auth logo area with a CSS-only brand panel and keep the existing POST login fields, error/session handling, reset link, registration link, and passkey behavior. Remove the passkey icon attribute and password eye control. Replace the application logo, desktop account menu, mobile toggle, and authenticated header with text-only equivalents while retaining named links, POST logout, data-test hooks, Flux appearance, toast, and mobile sidebar dispatch.
+Define restrained admin color tokens in app.css. Replace the auth logo area with a CSS-only brand panel. When preview access is enabled, render the Username/Password form posting to preview.login; otherwise retain Fortify email/password, reset, registration, and passkey behavior. Remove the passkey icon attribute and password eye control. Replace the application logo, desktop account menu, mobile toggle, and authenticated header with text-only equivalents. Resolve the displayed name and logout route from either the real user or preview.user while retaining CSRF, data-test hooks, Flux appearance, toast, and mobile sidebar dispatch.
 
-- [ ] **Step 4: Replace the dashboard placeholder pattern**
+- [ ] **Step 7: Replace the dashboard placeholder pattern**
 
 Render a minimal page heading and neutral frontend-foundation notice without using x-placeholder-pattern, images, or SVG markup. Later Task 3 replaces this temporary dashboard body.
 
-- [ ] **Step 5: Run the focused tests**
+- [ ] **Step 8: Run the focused tests**
 
-Run: php artisan test --compact tests/Feature/Auth/AuthenticationTest.php tests/Feature/DashboardTest.php
+Run: php artisan test --compact tests/Feature/Auth/PreviewAuthenticationTest.php tests/Feature/Auth/AuthenticationTest.php tests/Feature/DashboardTest.php
 
 Expected: PASS, including all pre-existing authentication assertions.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 9: Commit**
 
 ~~~powershell
-git add resources/css/app.css resources/views/layouts/auth/simple.blade.php resources/views/pages/auth/login.blade.php resources/views/components/passkey-verify.blade.php resources/views/components/app-logo.blade.php resources/views/components/desktop-user-menu.blade.php resources/views/layouts/app/sidebar.blade.php resources/views/dashboard.blade.php tests/Feature/Auth/AuthenticationTest.php tests/Feature/DashboardTest.php
-git commit -m "feat: add text-only admin shell"
+git add .env.example app/Http/Controllers/PreviewSessionController.php app/Http/Middleware/EnsurePanelAccess.php bootstrap/app.php config/preview.php routes/web.php resources/css/app.css resources/views/layouts/auth/simple.blade.php resources/views/pages/auth/login.blade.php resources/views/components/passkey-verify.blade.php resources/views/components/app-logo.blade.php resources/views/components/desktop-user-menu.blade.php resources/views/layouts/app/sidebar.blade.php resources/views/dashboard.blade.php tests/Feature/Auth/PreviewAuthenticationTest.php tests/Feature/Auth/AuthenticationTest.php tests/Feature/DashboardTest.php
+git commit -m "feat: add local preview login and admin shell"
 ~~~
 
 ### Task 2: Shared admin components, routes, and navigation
@@ -120,11 +144,11 @@ git commit -m "feat: add text-only admin shell"
 **Interfaces:**
 - Produces: x-admin.page-heading(title, section), x-admin.panel(title, optional actions slot), x-admin.empty-table(columns: array, message: string), x-admin.chart-placeholder(title, subtitle), and x-admin.frontend-notice.
 - Produces named routes: subscribers.create, subscribers.index, subscribers.details, products.index, policies.index, reports.index, reports.daily, reports.transactions, reports.expenses, logs.system, logs.activity, router.index, router.backups, staff.index, integrations.messaging, integrations.scheduler, integrations.settings.
-- Consumes: The Task 1 x-layouts::app shell and text navigation patterns.
+- Consumes: The Task 1 x-layouts::app shell, text navigation patterns, and panel.access middleware.
 
 - [ ] **Step 1: Write failing route-access tests**
 
-Create a route/heading matrix and test every route as guest, authenticated-unverified, and authenticated-verified. Guests redirect to login; unverified users redirect to verification.notice; verified users receive 200 and the expected heading. Include unique headings for all seventeen pages.
+Create a route/heading matrix and test every route as guest, local preview session, authenticated-unverified, and authenticated-verified. Guests redirect to login; preview sessions and verified users receive 200 with the expected heading; unverified real users redirect to verification.notice. Include unique headings for all seventeen pages.
 
 ~~~php
 test('admin pages require a verified user and render their heading', function (string $route, string $heading) {
@@ -159,7 +183,7 @@ Implement the five components with explicit props. empty-table renders a semanti
 
 - [ ] **Step 4: Add protected routes and initial page shells**
 
-Add all named Route::view declarations to the existing auth,verified group. Each initial view uses x-layouts::app, x-admin.page-heading, and x-admin.frontend-notice, and contains no models, queries, or mutable state.
+Add all named Route::view declarations to the panel.access group. Each initial view uses x-layouts::app, x-admin.page-heading, and x-admin.frontend-notice, and contains no models, queries, or mutable state.
 
 - [ ] **Step 5: Expand the text-only sidebar**
 

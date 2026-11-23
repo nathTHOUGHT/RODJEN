@@ -10,6 +10,7 @@ The result is a frontend-only baseline inside the existing Laravel 13 Livewire s
 
 - Establish one responsive authenticated application shell with a text-based brand area, sidebar, top bar, content header, and footer.
 - Restyle the existing login page to use the same restrained visual language while preserving the starter's existing Fortify login behavior.
+- Provide a local-only, database-free preview login using the requested `admin` username and `admin` password so the page flow can be reviewed before staff records exist.
 - Add frontend page foundations for the screens shown in the references:
   - dashboard
   - add subscriber
@@ -53,6 +54,8 @@ The result is a frontend-only baseline inside the existing Laravel 13 Livewire s
 
 - Work inside the current repository and follow its Livewire 4, Flux UI Free, Tailwind CSS 4, and Blade conventions.
 - Reuse the current Fortify login route and validation contract; this UI phase may restyle it but must not replace authentication logic.
+- The preview login uses a separate rate-limited POST endpoint and server-side session. It is enabled through configuration only for local development, must be disabled in production, and must not authenticate through client-side JavaScript.
+- Real Fortify-authenticated verified users and the temporary preview session may both access the UI routes; unverified real users still follow Laravel's verification flow.
 - Use accessible labels, visible focus states, readable contrast, semantic tables, and clear empty-state copy.
 - Use text and simple CSS shapes only. Navigation and controls must not depend on icons.
 - The existing light/dark appearance mechanism should remain functional.
@@ -81,6 +84,9 @@ The screenshots supplied in the conversation are visual references for the page 
 - Split or centered authentication panel using CSS color blocks rather than an image.
 - Application name rendered as text.
 - Existing email, password, remember-me, validation, password-reset, passkey, and submission behavior remains available where the starter already exposes it.
+- When local preview access is enabled, the page instead presents Username and Password fields, posts to the preview-session endpoint, and redirects successful `admin` / `admin` access to the dashboard without querying the users table.
+- Invalid preview credentials return a generic error, the login session is regenerated after success, and preview logout invalidates the session and regenerates the CSRF token.
+- The root URL redirects to the login page for the panel-review flow.
 - No copied email address, logo, terms statement, vendor branding, or copyright from the reference.
 
 ### Authenticated shell
@@ -246,9 +252,10 @@ Components should be extracted only where they remove meaningful duplication acr
 
 ## Routing and State
 
-- Add named authenticated and verified routes for the new page views, following the project's existing Livewire page convention.
+- Add named protected routes for the new page views. A focused access middleware accepts either a local preview session or a real authenticated, verified Fortify user.
 - The pages may be view-only Livewire single-file components with no mutable component state.
 - Keep all existing authentication and settings routes intact.
+- Keep the preview credentials in configuration/environment values rather than application logic, document them as non-production demo values, and leave preview access disabled by default outside the local environment.
 - No query parameters, persistence, session-backed filters, or fake client-side CRUD state will be introduced.
 - Lightweight modal open/close state is permitted because it is presentational and does not represent persisted business behavior.
 
