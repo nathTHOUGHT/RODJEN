@@ -18,6 +18,7 @@ The result is a frontend-only baseline inside the existing Laravel 13 Livewire s
   - products and services
   - policy and conditions
   - reports overview
+  - daily accounting report
   - payment and transaction history report
   - expenses report
   - system logs
@@ -87,7 +88,7 @@ The screenshots supplied in the conversation are visual references for the page 
 - Persistent desktop sidebar and collapsible mobile navigation.
 - Text-only application name and environment/site selector placeholder.
 - Sidebar grouped into Dashboard, Subscriptions, Reports, Operations, API Integration, Settings, Logs, and Links.
-- Reports is the single financial-reporting navigation section. It contains Overview, Payment and transaction history, and Expenses; Transactions and Expenses do not appear as separate top-level sidebar sections.
+- Reports is the single financial-reporting navigation section. It contains Overview, Daily accounting report, Payment and transaction history, and Expenses; Transactions and Expenses do not appear as separate top-level sidebar sections.
 - Only pages supported by current references receive active routes in this phase. Future modules may appear as clearly disabled labels or may be omitted until their screenshots arrive.
 - Top bar contains a simple page context area and existing authenticated account/logout controls without decorative icons.
 - Main content uses a subdued background with bordered white/dark panels.
@@ -145,9 +146,23 @@ The screenshots supplied in the conversation are visual references for the page 
 ### Reports overview
 
 - One Reports landing page provides a clear entry point for every report currently represented by the supplied screenshots.
-- Text-only report cards link to Payment and transaction history and Expenses.
+- Text-only report cards link to Daily accounting report, Payment and transaction history, and Expenses.
 - Each card contains a short purpose statement and an unavailable-data notice rather than totals or charts.
 - Future report pages can be added to this landing page without changing the main sidebar hierarchy.
+
+### Daily accounting report
+
+- A filter bar provides one blank report-date field and a native Staff/User multiple-select field.
+- The multi-select is the visual insertion point for choosing one or more staff members whose future posted activity will be included in that day's report. It contains no invented user options while the database is unavailable.
+- Helper text explains that staff options and report aggregation will become available when the backend is connected.
+- Disabled Generate preview, Print, and Export controls make the intended workflow visible without implying that data is available.
+- The static report preview uses a compact, print-oriented layout with an Accounting Daily Report heading and blank Report date, Prepared by or Selected staff, Company, and Status values.
+- Bill Collection Summary contains Payment type and Amount columns plus a blank total row.
+- Other Cash Collection Summary and Expenses Breakdown each contain Description and Amount columns plus blank total rows.
+- Cash Status contains blank rows for total cash available, total expenses, cash on hand, and remit.
+- Remarks and Prepared by, Checked by, and Approved by signature lines complete the preview.
+- All values use neutral empty markers. No staff name, company name, date, payment channel, amount, status, or signature from the reference image is copied.
+- The page does not aggregate transactions, query users, calculate totals, print, or export in this frontend-only phase.
 
 ### Payment and transaction history report
 
