@@ -1,16 +1,44 @@
 <x-layouts::app :title="__('Dashboard')">
-    <section class="space-y-6">
-        <header>
-            <p class="text-sm font-medium text-cyan-700 dark:text-cyan-400">Overview</p>
-            <h1 class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">Dashboard</h1>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">A frontend foundation for the ISP administration workspace.</p>
-        </header>
+    <x-admin.page-heading title="Dashboard" section="Overview">
+        <x-slot:description>Welcome to the frontend foundation for subscriber, reporting, and network operations.</x-slot:description>
+    </x-admin.page-heading>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Panel foundation ready</h2>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-                Navigation and panel layouts are available for review. Business actions remain unavailable until the database and application services are added.
-            </p>
+    <div class="space-y-6">
+        <div class="grid gap-4 md:grid-cols-3">
+            @foreach (['Subscriber summary', 'Collection summary', 'Network summary'] as $summary)
+                <x-admin.panel :title="$summary">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">No data available</p>
+                </x-admin.panel>
+            @endforeach
         </div>
-    </section>
+
+        <x-admin.panel title="Month overview">
+            <x-slot:actions>
+                <label class="sr-only" for="dashboard-month">Month</label>
+                <select id="dashboard-month" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950">
+                    <option>Month</option>
+                </select>
+                <label class="sr-only" for="dashboard-year">Year</label>
+                <select id="dashboard-year" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950">
+                    <option>Year</option>
+                </select>
+            </x-slot:actions>
+
+            <div class="overflow-x-auto" data-table-scroll>
+                <div class="min-w-175">
+                    <div class="grid grid-cols-7 border-l border-t border-slate-200 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700">
+                        @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $day)
+                            <div class="border-b border-r border-slate-200 bg-slate-50 px-2 py-3 dark:border-slate-700 dark:bg-slate-800">{{ $day }}</div>
+                        @endforeach
+                    </div>
+                    <div class="grid grid-cols-7 border-l border-slate-200 dark:border-slate-700">
+                        @foreach (range(1, 35) as $cell)
+                            <div class="min-h-20 border-b border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"></div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">No activity scheduled</p>
+        </x-admin.panel>
+    </div>
 </x-layouts::app>
