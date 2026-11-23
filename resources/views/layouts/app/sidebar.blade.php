@@ -3,6 +3,37 @@
     $previewUser = session('preview.user');
     $displayName = $authenticatedUser?->name ?? data_get($previewUser, 'name', 'Admin');
     $logoutRoute = $authenticatedUser ? route('logout') : route('preview.logout');
+    $navigationGroups = [
+        'Dashboard' => [
+            ['label' => 'Overview', 'route' => 'dashboard'],
+        ],
+        'Subscriptions' => [
+            ['label' => 'Add subscriber', 'route' => 'subscribers.create'],
+            ['label' => 'Subscriber records', 'route' => 'subscribers.index'],
+            ['label' => 'Products and services', 'route' => 'products.index'],
+            ['label' => 'Policies and conditions', 'route' => 'policies.index'],
+        ],
+        'Reports' => [
+            ['label' => 'Overview', 'route' => 'reports.index'],
+            ['label' => 'Daily accounting report', 'route' => 'reports.daily'],
+            ['label' => 'Payment and transaction history', 'route' => 'reports.transactions'],
+            ['label' => 'Expenses', 'route' => 'reports.expenses'],
+        ],
+        'API Integration' => [
+            ['label' => 'Messaging', 'route' => 'integrations.messaging'],
+            ['label' => 'Scheduler', 'route' => 'integrations.scheduler'],
+            ['label' => 'Settings', 'route' => 'integrations.settings'],
+        ],
+        'Settings' => [
+            ['label' => 'Router', 'route' => 'router.index'],
+            ['label' => 'Router backups', 'route' => 'router.backups'],
+            ['label' => 'Staff users', 'route' => 'staff.index'],
+        ],
+        'Logs' => [
+            ['label' => 'System logs', 'route' => 'logs.system'],
+            ['label' => 'Activity logs', 'route' => 'logs.activity'],
+        ],
+    ];
 @endphp
 
 <!DOCTYPE html>
@@ -21,11 +52,19 @@
                     <x-app-logo href="{{ route('dashboard') }}" />
                 </div>
 
-                <nav class="flex-1 overflow-y-auto px-3 py-5">
-                    <p class="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Workspace</p>
-                    <a href="{{ route('dashboard') }}" class="mt-2 block rounded-lg px-3 py-2.5 text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                        Dashboard
-                    </a>
+                <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+                    @foreach ($navigationGroups as $group => $items)
+                        <section>
+                            <h2 class="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{{ $group }}</h2>
+                            <div class="mt-2 space-y-1">
+                                @foreach ($items as $item)
+                                    <a href="{{ route($item['route']) }}" class="block rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs($item['route']) ? 'bg-cyan-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
+                                        {{ $item['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endforeach
                 </nav>
 
                 <x-desktop-user-menu :name="$displayName" :logout-route="$logoutRoute" />
