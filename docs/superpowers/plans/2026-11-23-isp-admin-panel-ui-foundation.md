@@ -101,8 +101,9 @@ git commit -m "feat: add text-only admin shell"
 - Create: resources/views/admin/subscribers/show.blade.php
 - Create: resources/views/admin/products/index.blade.php
 - Create: resources/views/admin/policies/index.blade.php
-- Create: resources/views/admin/transactions/index.blade.php
-- Create: resources/views/admin/expenses/index.blade.php
+- Create: resources/views/admin/reports/index.blade.php
+- Create: resources/views/admin/reports/transactions.blade.php
+- Create: resources/views/admin/reports/expenses.blade.php
 - Create: resources/views/admin/logs/system.blade.php
 - Create: resources/views/admin/logs/activity.blade.php
 - Create: resources/views/admin/settings/router/index.blade.php
@@ -117,12 +118,12 @@ git commit -m "feat: add text-only admin shell"
 
 **Interfaces:**
 - Produces: x-admin.page-heading(title, section), x-admin.panel(title, optional actions slot), x-admin.empty-table(columns: array, message: string), x-admin.chart-placeholder(title, subtitle), and x-admin.frontend-notice.
-- Produces named routes: subscribers.create, subscribers.index, subscribers.details, products.index, policies.index, transactions.index, expenses.index, logs.system, logs.activity, router.index, router.backups, staff.index, integrations.messaging, integrations.scheduler, integrations.settings.
+- Produces named routes: subscribers.create, subscribers.index, subscribers.details, products.index, policies.index, reports.index, reports.transactions, reports.expenses, logs.system, logs.activity, router.index, router.backups, staff.index, integrations.messaging, integrations.scheduler, integrations.settings.
 - Consumes: The Task 1 x-layouts::app shell and text navigation patterns.
 
 - [ ] **Step 1: Write failing route-access tests**
 
-Create a route/heading matrix and test every route as guest, authenticated-unverified, and authenticated-verified. Guests redirect to login; unverified users redirect to verification.notice; verified users receive 200 and the expected heading. Include unique headings for all fifteen pages.
+Create a route/heading matrix and test every route as guest, authenticated-unverified, and authenticated-verified. Guests redirect to login; unverified users redirect to verification.notice; verified users receive 200 and the expected heading. Include unique headings for all sixteen pages.
 
 ~~~php
 test('admin pages require a verified user and render their heading', function (string $route, string $heading) {
@@ -137,6 +138,9 @@ test('admin pages require a verified user and render their heading', function (s
     ['subscribers.create', 'Add subscriber'],
     ['subscribers.index', 'Subscriber records'],
     ['subscribers.details', 'Subscriber details'],
+    ['reports.index', 'Reports'],
+    ['reports.transactions', 'Payment and transaction history'],
+    ['reports.expenses', 'Expenses'],
     // Include every interface route listed above.
 ]);
 ~~~
@@ -157,7 +161,7 @@ Add all named Route::view declarations to the existing auth,verified group. Each
 
 - [ ] **Step 5: Expand the text-only sidebar**
 
-Add route-aware text links grouped under Dashboard, Subscriptions, Transactions, API Integration, Settings, and Logs. Keep unsupported future modules out of the navigation. Do not add icon attributes, SVG, images, or dead links.
+Add route-aware text links grouped under Dashboard, Subscriptions, Reports, API Integration, Settings, and Logs. Reports contains Overview, Payment and transaction history, and Expenses; do not render separate Transactions or Expenses top-level sections. Keep unsupported future modules out of the navigation. Do not add icon attributes, SVG, images, or dead links.
 
 - [ ] **Step 6: Run the route and shell tests**
 
@@ -270,22 +274,23 @@ git add resources/views/admin/subscribers/show.blade.php tests/Feature/Admin/Sub
 git commit -m "feat: add subscriber details UI"
 ~~~
 
-### Task 5: Financial history and log panels
+### Task 5: Reports center and log panels
 
 **Files:**
-- Modify: resources/views/admin/transactions/index.blade.php
-- Modify: resources/views/admin/expenses/index.blade.php
+- Modify: resources/views/admin/reports/index.blade.php
+- Modify: resources/views/admin/reports/transactions.blade.php
+- Modify: resources/views/admin/reports/expenses.blade.php
 - Modify: resources/views/admin/logs/system.blade.php
 - Modify: resources/views/admin/logs/activity.blade.php
 - Create: tests/Feature/Admin/ReportingUiTest.php
 
 **Interfaces:**
 - Consumes: x-admin.panel, x-admin.empty-table, x-admin.chart-placeholder, and x-admin.frontend-notice.
-- Produces: Static payment, expense, system-log, and activity-log reporting panels.
+- Produces: A unified Reports landing page plus static payment, expense, system-log, and activity-log reporting panels.
 
 - [ ] **Step 1: Write failing report-panel tests**
 
-For each route, assert the required chart title when applicable, filter labels, table headings, data-table-scroll hook, and page-specific empty message. Assert the responses contain no copied receipt, balance, log, or activity rows and no img/svg markup.
+Assert the Reports landing page contains text links to Payment and transaction history and Expenses and contains no invented totals. For each report/log route, assert the required chart title when applicable, filter labels, table headings, data-table-scroll hook, and page-specific empty message. Assert the responses contain no copied receipt, balance, log, or activity rows and no img/svg markup.
 
 - [ ] **Step 2: Run the tests and confirm failure**
 
@@ -293,9 +298,9 @@ Run: php artisan test --compact tests/Feature/Admin/ReportingUiTest.php
 
 Expected: FAIL because the report shells lack their controls and tables.
 
-- [ ] **Step 3: Implement payment and expense panels**
+- [ ] **Step 3: Implement the unified Reports section**
 
-Compose CSS-only chart placeholders, monthly/weekly labels where specified, blank year/month/status/search controls, and empty tables with the spec's columns. Export and add controls are disabled text buttons with data-test hooks and no download/create behavior.
+Build a Reports landing page with text-only cards linking to the two available financial reports. Compose the Payment and transaction history and Expenses pages with CSS-only chart placeholders, monthly/weekly labels where specified, blank year/month/status/search controls, and empty tables with the spec's columns. Export and add controls are disabled text buttons with data-test hooks and no download/create behavior.
 
 - [ ] **Step 4: Implement system and activity log panels**
 
@@ -310,7 +315,7 @@ Expected: PASS.
 - [ ] **Step 6: Commit**
 
 ~~~powershell
-git add resources/views/admin/transactions resources/views/admin/expenses resources/views/admin/logs tests/Feature/Admin/ReportingUiTest.php
+git add resources/views/admin/reports resources/views/admin/logs tests/Feature/Admin/ReportingUiTest.php
 git commit -m "feat: add reporting UI panels"
 ~~~
 

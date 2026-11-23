@@ -17,8 +17,9 @@ The result is a frontend-only baseline inside the existing Laravel 13 Livewire s
   - subscriber details
   - products and services
   - policy and conditions
-  - payment history
-  - expenses
+  - reports overview
+  - payment and transaction history report
+  - expenses report
   - system logs
   - activity logs
   - MikroTik router overview and backup history
@@ -85,7 +86,8 @@ The screenshots supplied in the conversation are visual references for the page 
 
 - Persistent desktop sidebar and collapsible mobile navigation.
 - Text-only application name and environment/site selector placeholder.
-- Sidebar grouped into Dashboard, Subscriptions, Transactions, Operations, API Integration, Settings, Logs, and Links.
+- Sidebar grouped into Dashboard, Subscriptions, Reports, Operations, API Integration, Settings, Logs, and Links.
+- Reports is the single financial-reporting navigation section. It contains Overview, Payment and transaction history, and Expenses; Transactions and Expenses do not appear as separate top-level sidebar sections.
 - Only pages supported by current references receive active routes in this phase. Future modules may appear as clearly disabled labels or may be omitted until their screenshots arrive.
 - Top bar contains a simple page context area and existing authenticated account/logout controls without decorative icons.
 - Main content uses a subdued background with bordered white/dark panels.
@@ -140,14 +142,21 @@ The screenshots supplied in the conversation are visual references for the page 
 - Table shell for policy name and PPPoE/hotspot/IPoE actions and conditions.
 - Empty state instead of copied policy rules.
 
-### Payment history
+### Reports overview
+
+- One Reports landing page provides a clear entry point for every report currently represented by the supplied screenshots.
+- Text-only report cards link to Payment and transaction history and Expenses.
+- Each card contains a short purpose statement and an unavailable-data notice rather than totals or charts.
+- Future report pages can be added to this landing page without changing the main sidebar hierarchy.
+
+### Payment and transaction history report
 
 - Chart placeholder with labelled monthly/weekly display controls that do not aggregate data.
 - Visual year, month, posting-status, search, and transaction-type controls.
 - Table shell for timestamp, account details, transaction, receipt information, reference, and updated-by fields.
 - Empty state instead of copied receipts.
 
-### Expenses
+### Expenses report
 
 - Expense chart placeholder with visual year, month, and search controls.
 - Add-action location and table shell for timestamp, invoice, supplier/description, amount, and updated-by fields.
