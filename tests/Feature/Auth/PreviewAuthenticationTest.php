@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+
 beforeEach(function () {
     config()->set([
         'preview.enabled' => true,
@@ -82,6 +84,18 @@ it('ends a preview session without using the authentication guard', function () 
 
 it('does not expose the preview login endpoint when preview access is disabled', function () {
     config()->set('preview.enabled', false);
+
+    $response = $this->post(route('preview.login'), [
+        'username' => 'admin',
+        'password' => 'admin',
+    ]);
+
+    $response->assertNotFound();
+});
+
+it('does not expose preview access outside local and testing environments', function () {
+    $this->withoutMiddleware(PreventRequestForgery::class);
+    $this->app->detectEnvironment(fn (): string => 'production');
 
     $response = $this->post(route('preview.login'), [
         'username' => 'admin',

@@ -11,7 +11,10 @@ class PreviewSessionController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
-        abort_unless(config('preview.enabled'), 404);
+        abort_unless(
+            config('preview.enabled') && app()->environment(['local', 'testing']),
+            404,
+        );
 
         $credentials = $request->validate([
             'username' => ['required', 'string', 'max:255'],

@@ -1,6 +1,6 @@
 <x-layouts::auth :title="__('Log in')">
     <div class="flex flex-col gap-6">
-        @if (config('preview.enabled'))
+        @if (config('preview.enabled') && app()->environment(['local', 'testing']))
             <div class="text-center">
                 <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">{{ __('Welcome back') }}</h1>
                 <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ __('Enter the local preview credentials to open the panel') }}</p>

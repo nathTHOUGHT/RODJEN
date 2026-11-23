@@ -15,7 +15,11 @@ class EnsurePanelAccess
      */
     public function handle(Request $request, Closure $next): Response|RedirectResponse
     {
-        if (config('preview.enabled') && $request->session()->has('preview.user')) {
+        if (
+            config('preview.enabled')
+            && app()->environment(['local', 'testing'])
+            && $request->session()->has('preview.user')
+        ) {
             return $next($request);
         }
 
