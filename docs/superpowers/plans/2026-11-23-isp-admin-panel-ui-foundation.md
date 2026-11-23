@@ -25,9 +25,9 @@
 
 1. Guests and unverified users must not reach any new administration route; Task 2 tests the full route matrix for both states.
 2. Navigation must remain usable without icons and must mark nested sections clearly; Tasks 1 and 2 test text navigation and current-page headings.
-3. Frontend-only controls must never imply or trigger persistence; Tasks 3 through 6 test disabled action markers and the absence of business forms.
-4. Wide tables and dense forms must remain usable at narrow widths; Tasks 3 through 7 assert the shared horizontal-scroll and responsive-grid hooks.
-5. Supplied screenshots contain real-looking data and secrets that must not leak into the new UI; Tasks 3 through 7 assert explicit empty states, blank sensitive fields, and no image/SVG markup.
+3. Frontend-only controls must never imply or trigger persistence; Tasks 3 through 7 test disabled action markers and the absence of business forms.
+4. Wide tables and dense forms must remain usable at narrow widths; Tasks 3 through 8 assert the shared horizontal-scroll and responsive-grid hooks.
+5. Supplied screenshots contain real-looking data and secrets that must not leak into the new UI; Tasks 3 through 8 assert explicit empty states, blank sensitive fields, and no image/SVG markup.
 
 ---
 
@@ -98,6 +98,7 @@ git commit -m "feat: add text-only admin shell"
 - Create: resources/views/components/admin/frontend-notice.blade.php
 - Create: resources/views/admin/subscribers/create.blade.php
 - Create: resources/views/admin/subscribers/index.blade.php
+- Create: resources/views/admin/subscribers/show.blade.php
 - Create: resources/views/admin/products/index.blade.php
 - Create: resources/views/admin/policies/index.blade.php
 - Create: resources/views/admin/transactions/index.blade.php
@@ -116,12 +117,12 @@ git commit -m "feat: add text-only admin shell"
 
 **Interfaces:**
 - Produces: x-admin.page-heading(title, section), x-admin.panel(title, optional actions slot), x-admin.empty-table(columns: array, message: string), x-admin.chart-placeholder(title, subtitle), and x-admin.frontend-notice.
-- Produces named routes: subscribers.create, subscribers.index, products.index, policies.index, transactions.index, expenses.index, logs.system, logs.activity, router.index, router.backups, staff.index, integrations.messaging, integrations.scheduler, integrations.settings.
+- Produces named routes: subscribers.create, subscribers.index, subscribers.details, products.index, policies.index, transactions.index, expenses.index, logs.system, logs.activity, router.index, router.backups, staff.index, integrations.messaging, integrations.scheduler, integrations.settings.
 - Consumes: The Task 1 x-layouts::app shell and text navigation patterns.
 
 - [ ] **Step 1: Write failing route-access tests**
 
-Create a route/heading matrix and test every route as guest, authenticated-unverified, and authenticated-verified. Guests redirect to login; unverified users redirect to verification.notice; verified users receive 200 and the expected heading. Include unique headings for all fourteen pages.
+Create a route/heading matrix and test every route as guest, authenticated-unverified, and authenticated-verified. Guests redirect to login; unverified users redirect to verification.notice; verified users receive 200 and the expected heading. Include unique headings for all fifteen pages.
 
 ~~~php
 test('admin pages require a verified user and render their heading', function (string $route, string $heading) {
@@ -135,6 +136,7 @@ test('admin pages require a verified user and render their heading', function (s
 })->with([
     ['subscribers.create', 'Add subscriber'],
     ['subscribers.index', 'Subscriber records'],
+    ['subscribers.details', 'Subscriber details'],
     // Include every interface route listed above.
 ]);
 ~~~
@@ -219,7 +221,56 @@ git add resources/views/dashboard.blade.php resources/views/admin/subscribers re
 git commit -m "feat: add subscription UI panels"
 ~~~
 
-### Task 4: Financial history and log panels
+### Task 4: Subscriber details foundation
+
+**Files:**
+- Modify: resources/views/admin/subscribers/show.blade.php
+- Create: tests/Feature/Admin/SubscriberDetailsUiTest.php
+
+**Interfaces:**
+- Consumes: Task 2 admin components, the subscribers.details named route, and Flux modal/trigger/close components.
+- Produces: A static subscriber details page with overview panels, CSS-only map placeholders, empty histories, and five presentational modals that cannot mutate data.
+
+- [ ] **Step 1: Write the failing subscriber-details contract tests**
+
+Assert the response contains Account details, Service details, Coverage map, Customer location, Network path, PON details, MikroTik parameters, Transaction summary, Transactions, System logs, and Activity logs. Assert the account/action area exposes descriptive text labels for Archive, Message, Support ticket, Job order, Transaction, Billing status, Service state, and Override date without img/svg markup.
+
+Assert modal content for Remove account, Account settings, Deactivate billing, Override date, and Transaction details. Account settings must expose service type, username, blank password, subscription, local/remote address, caller ID, and credit limit. Transaction details must expose transaction date, current balance, transaction type, credit date, description, amount, payment mode, and optional reference. Every Confirm, Update, or Submit control is type="button", disabled, and has a page-specific data-test marker.
+
+Assert display rows use only neutral empty markers such as Not available or an em dash, credential fields have blank values, and all history tables show empty-state copy. Do not place any screenshot account number, subscriber identity, contact data, network address, credential, plan, balance, or log text in either production or test files.
+
+- [ ] **Step 2: Run the test and confirm failure**
+
+Run: php artisan test --compact tests/Feature/Admin/SubscriberDetailsUiTest.php
+
+Expected: FAIL because subscribers/show contains only the initial shell.
+
+- [ ] **Step 3: Implement account and service overview panels**
+
+Use a CSS-only profile placeholder, blank labelled account rows, a blank message-template select, and wrapped text actions. Render neutral service/balance fields and recurring/account-access labels with em-dash or Not available values rather than numeric examples. Only controls that open presentational modals may be enabled.
+
+- [ ] **Step 4: Implement network, transaction, and log placeholders**
+
+Render three CSS-only map placeholders without iframe/canvas/provider assets. Add PON and MikroTik parameter label grids, four neutral transaction summary cards, an empty transaction table, and subscriber-specific empty system/activity tables.
+
+- [ ] **Step 5: Implement the five presentational modals**
+
+Use Flux modals with closable=false and text Close/Cancel controls. Keep all fields blank and unbound. Remove account, Account settings, Deactivate billing, Override date, and Transaction details mutation controls remain disabled type="button" elements with stable data-test markers; do not add forms, wire actions, routes, or confirmation logic.
+
+- [ ] **Step 6: Run focused tests**
+
+Run: php artisan test --compact tests/Feature/Admin/SubscriberDetailsUiTest.php tests/Feature/Admin/SubscriptionUiTest.php tests/Feature/Admin/AdminRoutesTest.php
+
+Expected: PASS.
+
+- [ ] **Step 7: Commit**
+
+~~~powershell
+git add resources/views/admin/subscribers/show.blade.php tests/Feature/Admin/SubscriberDetailsUiTest.php
+git commit -m "feat: add subscriber details UI"
+~~~
+
+### Task 5: Financial history and log panels
 
 **Files:**
 - Modify: resources/views/admin/transactions/index.blade.php
@@ -263,7 +314,7 @@ git add resources/views/admin/transactions resources/views/admin/expenses resour
 git commit -m "feat: add reporting UI panels"
 ~~~
 
-### Task 5: Router and staff settings panels
+### Task 6: Router and staff settings panels
 
 **Files:**
 - Modify: resources/views/admin/settings/router/index.blade.php
@@ -306,7 +357,7 @@ git add resources/views/admin/settings tests/Feature/Admin/SettingsUiTest.php
 git commit -m "feat: add settings UI panels"
 ~~~
 
-### Task 6: Messaging, scheduler, and integration settings
+### Task 7: Messaging, scheduler, and integration settings
 
 **Files:**
 - Modify: resources/views/admin/integrations/messaging.blade.php
@@ -353,7 +404,7 @@ git add resources/views/admin/integrations tests/Feature/Admin/IntegrationUiTest
 git commit -m "feat: add integration UI panels"
 ~~~
 
-### Task 7: Presentation constraints and full verification
+### Task 8: Presentation constraints and full verification
 
 **Files:**
 - Create: tests/Feature/Admin/PresentationConstraintsTest.php
@@ -364,7 +415,7 @@ git commit -m "feat: add integration UI panels"
 - Modify as needed: resources/views/layouts/app/sidebar.blade.php
 
 **Interfaces:**
-- Consumes: Every page and component from Tasks 1 through 6.
+- Consumes: Every page and component from Tasks 1 through 7.
 - Produces: Verified responsive hooks, accessible labels, honest disabled states, and a clean build across the whole UI foundation.
 
 - [ ] **Step 1: Write cross-page constraint tests**

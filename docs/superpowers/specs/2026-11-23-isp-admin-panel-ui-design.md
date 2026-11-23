@@ -14,6 +14,7 @@ The result is a frontend-only baseline inside the existing Laravel 13 Livewire s
   - dashboard
   - add subscriber
   - subscriber records
+  - subscriber details
   - products and services
   - policy and conditions
   - payment history
@@ -112,6 +113,20 @@ The screenshots supplied in the conversation are visual references for the page 
 - Table headers representing account, recurring dates, details, subscription, service, status, balance, and remarks.
 - One full-width `No subscriber records yet` empty state instead of copied rows.
 - Pagination area is a non-interactive placeholder.
+
+### Subscriber details
+
+- Account profile placeholder rendered with CSS only, beside an Account details panel containing blank account, name, address, contact, email, area, and remarks fields.
+- Message-template selector and a wrapped row of descriptive text actions. Archive, messaging, portal, support, print, job order, billing, service-state, credentials, and override actions remain unavailable; concise title/help text may explain their future purpose.
+- Service details panel with balance, product, recurring charge, subscription dates, billing state, VOD/agent/payout, credit-limit, access-service, service-status, profile, and credential labels, all using neutral empty values.
+- Three CSS-only placeholders for coverage, customer location, and network path instead of embedded maps or map-provider assets.
+- PON details and MikroTik parameters panels containing the labels visible in the reference but no network values or refresh behavior.
+- Neutral transaction summary cards for payments, invoices, rebates, and discounts, followed by an empty transaction table.
+- Subscriber-specific System logs and Activity logs panels with empty tables.
+- Presentational modals for Remove account, Account settings, Deactivate billing, Override date, and Transaction details. They may open and close, but every destructive or mutation control is disabled.
+- Account settings fields include service type, username, password, subscription, local address, remote address, caller ID, and credit limit.
+- Transaction fields include transaction date, current balance, transaction type, credit date, description, amount, payment mode, and optional reference; all values remain blank.
+- No profile image, map embed, action icon, account number, subscriber identity, address, phone, network address, PPPoE credential, balance, plan, date, log entry, or transaction is copied from the screenshots.
 
 ### Products and services
 
