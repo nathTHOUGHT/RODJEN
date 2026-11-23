@@ -18,6 +18,13 @@ The result is a frontend-only baseline inside the existing Laravel 13 Livewire s
   - policy and conditions
   - payment history
   - expenses
+  - system logs
+  - activity logs
+  - MikroTik router overview and backup history
+  - staff user management
+  - messaging templates and delivery history
+  - notification scheduler and event templates
+  - API and third-party integration settings
 - Create reusable view components for page headings, panels, filters, empty tables, form sections, and chart placeholders.
 - Keep every layout usable on desktop, tablet, and mobile.
 - Make it easy to replace empty states with Livewire data and actions in a later backend phase.
@@ -77,7 +84,7 @@ The screenshots supplied in the conversation are visual references for the page 
 
 - Persistent desktop sidebar and collapsible mobile navigation.
 - Text-only application name and environment/site selector placeholder.
-- Sidebar grouped into Dashboard, Subscriptions, Transactions, Operations, Settings, and Links.
+- Sidebar grouped into Dashboard, Subscriptions, Transactions, Operations, API Integration, Settings, Logs, and Links.
 - Only pages supported by current references receive active routes in this phase. Future modules may appear as clearly disabled labels or may be omitted until their screenshots arrive.
 - Top bar contains a simple page context area and existing authenticated account/logout controls without decorative icons.
 - Main content uses a subdued background with bordered white/dark panels.
@@ -131,6 +138,59 @@ The screenshots supplied in the conversation are visual references for the page 
 - Add-action location and table shell for timestamp, invoice, supplier/description, amount, and updated-by fields.
 - Empty state instead of copied expenses.
 
+### System logs
+
+- Visual year and log-type filters, page-size selector, search field, export location, and pagination placeholder.
+- Table columns for timestamp and description.
+- Empty state instead of copied login or account-change events.
+
+### Activity logs
+
+- CSS-only activity chart placeholder with monthly/weekly display controls.
+- Visual year/type filters and an add-action location.
+- Table columns for selection, timestamp, information, and updated-by details.
+- Empty state instead of copied staff notes.
+
+### MikroTik router settings
+
+- Router and Backup tabs within the Settings section.
+- Router overview panel with connection state, connection label, latency, board name, RouterOS version, uptime, build time, software version, processor, and architecture placeholders.
+- Text-only Sync Router and Save Configuration controls, visibly marked unavailable.
+- Presentational configuration modal for primary host/port, backup host/port, username, and password. The modal may open and close in the browser, but it does not save or connect.
+- Backup-history table with timestamp, identity, board name, and OS version columns plus an empty state.
+- No MikroTik logos, connection checks, SSH behavior, credential storage, or configuration downloads.
+
+### Staff user management
+
+- User-type selector, add-action location, search field, and pagination placeholder.
+- Table columns for user details, contacts, group/status information, and created/edited metadata.
+- Presentational Add User modal with user ID, first name, last name, contact number, email, allowed weekdays, allowed time range, group, username, and password fields.
+- Text action labels replace power, edit, and delete icons.
+- No account creation, role enforcement, schedule enforcement, credential storage, or destructive behavior.
+
+### Messaging
+
+- Template section with add-action location and a table shell for subject and message.
+- Delivery-history section with Clients/Others tabs, date and search controls, and timestamp, recipient, message, and channel-status columns.
+- Channel headings may use short text labels, but no success/failure records are invented.
+- Empty states replace copied message templates and delivery rows.
+
+### Scheduler and events
+
+- Schedule table shell with information, conditions, effectivity, and delivery-channel columns.
+- Event-template table shell with event, message, and delivery-channel columns.
+- Presentational Add Schedule and Add Event modals containing channel toggles, subject/event selection, recipient/filter controls, message textarea, placeholder-token help, and timing controls.
+- Modals may open and close but submit controls remain unavailable.
+- No cron jobs, queues, notifications, recipient queries, template rendering, or message delivery.
+
+### Integration settings
+
+- Text-only configuration panels for chat, TR-069, monitoring, email, SMS providers, payment providers, and REST API access represented by the references.
+- Provider names may be retained as section headings when useful, but provider logos and descriptive marketing copy are omitted.
+- Blank URL, hostname, account, sender, fee, key, secret, and password fields provide layout anchors for later implementation.
+- Secret-like fields use password inputs and never contain real or example credentials.
+- No connection testing, key generation, callback handling, secret persistence, or third-party SDKs.
+
 ## Reusable UI Pieces
 
 - Application shell and grouped text navigation.
@@ -141,6 +201,7 @@ The screenshots supplied in the conversation are visual references for the page 
 - Empty table component accepting column definitions and empty-state text.
 - CSS-only chart placeholder.
 - Frontend-only status notice for controls that intentionally have no behavior.
+- Reusable presentational modal shell for configuration, staff, schedule, and event forms.
 
 Components should be extracted only where they remove meaningful duplication across these pages. Existing Flux components should be used when they fit the free edition; ordinary Blade markup is acceptable for specialized table and chart placeholders.
 
@@ -150,6 +211,7 @@ Components should be extracted only where they remove meaningful duplication acr
 - The pages may be view-only Livewire single-file components with no mutable component state.
 - Keep all existing authentication and settings routes intact.
 - No query parameters, persistence, session-backed filters, or fake client-side CRUD state will be introduced.
+- Lightweight modal open/close state is permitted because it is presentational and does not represent persisted business behavior.
 
 ## Responsive and Accessibility Behavior
 
@@ -163,6 +225,7 @@ Components should be extracted only where they remove meaningful duplication acr
 
 - Feature tests confirm the login page remains public and application pages remain protected by authentication and email verification.
 - Authenticated smoke tests confirm every new named route renders successfully without requiring business records.
+- UI-level tests may confirm presentational modals open and close while their submit actions remain unavailable.
 - Existing Fortify and settings tests must continue to pass.
 - Run Pint/lint, the PHPStan fallback suitable for this Windows environment, the full Pest suite, and the Vite production build.
 - Perform a rendered-page review at desktop and mobile widths when a local browser path is available.
