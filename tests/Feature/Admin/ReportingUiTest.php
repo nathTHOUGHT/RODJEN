@@ -11,29 +11,33 @@ beforeEach(function () {
     ]);
 });
 
-test('reports overview links every available financial report without invented totals', function () {
+test('one reports page contains links to all three report sections without invented totals', function () {
     $response = $this->get(route('reports.index'));
 
     $response
         ->assertOk()
-        ->assertSee('Daily accounting report')
-        ->assertSee(route('reports.daily'), false)
-        ->assertSee('data-report-card="daily"', false)
-        ->assertSee('Payment and transaction history')
-        ->assertSee(route('reports.transactions'), false)
-        ->assertSee('data-report-card="transactions"', false)
-        ->assertSee('Expenses')
-        ->assertSee(route('reports.expenses'), false)
-        ->assertSee('data-report-card="expenses"', false)
+        ->assertSeeInOrder(['id="daily"', 'id="transactions"', 'id="expenses"'], false)
         ->assertSee('Report data will become available when the backend is connected.')
         ->assertDontSee('₱')
         ->assertDontSee('PHP ')
         ->assertDontSee('<img', false)
         ->assertDontSee('<svg', false);
+
+    foreach (['daily', 'transactions', 'expenses'] as $report) {
+        $response
+            ->assertSee('href="#'.$report.'"', false)
+            ->assertSee('data-report-card="'.$report.'"', false)
+            ->assertDontSee('href="'.route('reports.'.$report).'"', false);
+    }
 });
 
+test('old report URLs redirect to their sections on the reports page', function (string $report) {
+    $this->get(route('reports.'.$report))
+        ->assertRedirect(route('reports.index').'#'.$report);
+})->with(['daily', 'transactions', 'expenses']);
+
 test('daily accounting report exposes blank daily and multi-user filters with disabled actions', function () {
-    $response = $this->get(route('reports.daily'));
+    $response = $this->get(route('reports.index'));
 
     $response
         ->assertOk()
@@ -57,7 +61,7 @@ test('daily accounting report exposes blank daily and multi-user filters with di
 });
 
 test('daily accounting report renders the complete print-oriented preview structure', function () {
-    $response = $this->get(route('reports.daily'));
+    $response = $this->get(route('reports.index'));
 
     $response
         ->assertOk()
@@ -88,7 +92,7 @@ test('daily accounting report renders the complete print-oriented preview struct
 });
 
 test('payment and transaction history provides chart filters and an empty scrollable table', function () {
-    $response = $this->get(route('reports.transactions'));
+    $response = $this->get(route('reports.index'));
 
     $response
         ->assertOk()
@@ -115,7 +119,7 @@ test('payment and transaction history provides chart filters and an empty scroll
 });
 
 test('expenses report provides chart filters and an empty scrollable table', function () {
-    $response = $this->get(route('reports.expenses'));
+    $response = $this->get(route('reports.index'));
 
     $response
         ->assertOk()

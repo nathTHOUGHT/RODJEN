@@ -18,31 +18,42 @@ function subscriberDetailsResponse(object $testCase): TestResponse
 
 function expectDisabledSubscriberAction(string $html, string $testMarker): void
 {
-    $pattern = '/<button(?=[^>]*data-test="'.preg_quote($testMarker, '/').'"\)'
+    $pattern = '/<button(?=[^>]*data-test="'.preg_quote($testMarker, '/').'")'
         .'(?=[^>]*type="button")(?=[^>]*disabled)[^>]*>/i';
 
     expect($html)->toMatch($pattern);
 }
 
-test('subscriber details exposes the complete text-only information foundation', function () {
+test('subscriber details presents the toolbar and information panels in layout order', function () {
     $response = subscriberDetailsResponse($this);
 
     $response
         ->assertOk()
         ->assertSeeInOrder([
-            'Account details',
-            'Service details',
-            'Coverage map',
-            'Customer location',
-            'Network path',
-            'PON details',
+            'Archive',
+            'Thermal',
+            'A4',
+            'A4 SOA',
+            'Transaction',
+            'Comment',
+            'Mark as pulled out',
+            'Promise',
+            'Return to records',
+            'Personal Details',
+            'Service Details',
+            'Comment list',
+            'MikroTik Details',
             'MikroTik parameters',
-            'Transaction summary',
-            'Transactions',
-            'System logs',
-            'Activity logs',
+            'Transaction list',
         ])
-        ->assertSee('Archive')
+        ->assertSee('Additional details')
+        ->assertSee('Coverage map')
+        ->assertSee('Customer location')
+        ->assertSee('Network path')
+        ->assertSee('PON details')
+        ->assertSee('Transaction summary')
+        ->assertSee('System logs')
+        ->assertSee('Activity logs')
         ->assertSee('Message')
         ->assertSee('Support ticket')
         ->assertSee('Job order')
@@ -54,6 +65,9 @@ test('subscriber details exposes the complete text-only information foundation',
         ->assertDontSee('<svg', false)
         ->assertDontSee('<iframe', false)
         ->assertDontSee('<canvas', false);
+
+    $recordsUrl = preg_quote(route('subscribers.index'), '/');
+    expect($response->getContent())->toMatch('/<a\b[^>]*href="'.$recordsUrl.'"[^>]*>\s*Return to records\s*<\/a>/');
 });
 
 test('subscriber detail modals expose blank future fields and disabled mutations', function () {
@@ -84,6 +98,10 @@ test('subscriber detail modals expose blank future fields and disabled mutations
         ->assertSee('Payment mode')
         ->assertSee('Optional reference');
 
+    foreach (['transaction', 'comment', 'promise'] as $dialog) {
+        expect($html)->toMatch('/<dialog\b[^>]*\bid="subscriber-'.$dialog.'-dialog"[^>]*>/');
+    }
+
     expectDisabledSubscriberAction($html, 'subscriber-remove-disabled');
     expectDisabledSubscriberAction($html, 'subscriber-settings-disabled');
     expectDisabledSubscriberAction($html, 'subscriber-billing-disabled');
@@ -101,6 +119,7 @@ test('subscriber detail data regions remain explicitly empty', function () {
     $response
         ->assertOk()
         ->assertSee('Not available')
+        ->assertSee('No comments yet')
         ->assertSee('No transactions yet')
         ->assertSee('No system logs yet')
         ->assertSee('No activity logs yet');

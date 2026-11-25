@@ -30,6 +30,7 @@ test('local preview sessions can access admin pages', function (string $route, s
     config()->set('preview.enabled', true);
 
     $this
+        ->followingRedirects()
         ->withSession([
             'preview.user' => [
                 'username' => 'admin',
@@ -55,6 +56,7 @@ test('verified authenticated users can access admin pages', function (string $ro
 
     $this
         ->actingAs($user)
+        ->followingRedirects()
         ->get(route($route))
         ->assertOk()
         ->assertSee($heading);

@@ -36,6 +36,36 @@ html {
     background: #f8fafc;
 }
 
+.sidebar-scroll {
+    scrollbar-width: none;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.sidebar-icon::before {
+    content: '';
+    display: block;
+    flex: none;
+    inline-size: 1rem;
+    block-size: 1rem;
+    background-color: currentColor;
+    mask: var(--sidebar-icon) center / contain no-repeat;
+}
+
+.sidebar-logo {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.625rem;
+}
+
+.sidebar-logo::before {
+    grid-row: span 2;
+    color: var(--color-cyan-300);
+}
+
 @layer theme {
     .dark {
         --color-accent: var(--color-white);

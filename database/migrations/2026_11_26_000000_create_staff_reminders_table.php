@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('staff_reminders', function (Blueprint $table) {
+            $table->id();
+            $table->string('title', 80);
+            $table->text('body')->nullable();
+            $table->date('starts_on')->index();
+            $table->string('repeat', 7);
+            $table->string('author_name');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('staff_reminders');
+    }
+};

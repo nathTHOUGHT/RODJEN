@@ -15,8 +15,34 @@
                     </label>
                 @endforeach
             </div>
-            <x-admin.empty-table :columns="['Account', 'Recurring dates', 'Details', 'Subscription', 'Service', 'Status', 'Balance', 'Remarks']" message="No subscriber records yet" />
-            <p class="mt-4 text-sm text-slate-400">Pagination will appear when records are available.</p>
+            <div class="overflow-x-auto" data-table-scroll>
+                <table class="min-w-full border-separate border-spacing-0 text-left text-sm">
+                    <thead>
+                        <tr>
+                            @foreach (['Account', 'Recurring dates', 'Details', 'Subscription', 'Service', 'Status', 'Balance', 'Remarks'] as $column)
+                                <th scope="col" class="whitespace-nowrap border-b border-slate-200 bg-slate-50 px-4 py-3 font-semibold dark:border-slate-700 dark:bg-slate-800">{{ $column }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="whitespace-nowrap px-4 py-4 font-semibold">
+                                <a href="{{ route('subscribers.details') }}" class="text-cyan-700 underline underline-offset-4 dark:text-cyan-300">{{ $sampleSubscriber['personal']['Account number'] }}</a>
+                            </th>
+                            <td class="whitespace-nowrap px-4 py-4">15th of each month</td>
+                            <td class="whitespace-nowrap px-4 py-4">
+                                <a href="{{ route('subscribers.details') }}" class="font-semibold text-cyan-700 underline underline-offset-4 dark:text-cyan-300">{{ $sampleSubscriber['personal']['Name'] }}</a>
+                                <span class="block text-xs text-slate-500 dark:text-slate-400">Sample subscriber</span>
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['service']['Plan'] }}</td>
+                            <td class="whitespace-nowrap px-4 py-4">Fiber</td>
+                            <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['status'] }}</td>
+                            <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['balance'] }}</td>
+                            <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['personal']['Remarks'] }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </x-admin.panel>
     </div>
 </x-layouts::app>

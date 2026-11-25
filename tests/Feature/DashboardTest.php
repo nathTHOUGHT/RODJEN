@@ -15,6 +15,19 @@ test('authenticated users can visit the dashboard', function () {
     $response->assertOk();
 });
 
+test('the sidebar header opens Home and Dashboard has a direct navigation item', function () {
+    $this->actingAs(User::factory()->create());
+
+    $response = $this->get(route('subscribers.index'))->assertOk();
+    $homeUrl = preg_quote(url('/home'), '/');
+    $dashboardUrl = preg_quote(route('dashboard'), '/');
+
+    expect($response->getContent())
+        ->toMatch('/<a\b[^>]*href="'.$homeUrl.'"[^>]*>\s*<span[^>]*>ISP Operations<\/span>/')
+        ->toMatch('/<a\b[^>]*href="'.$dashboardUrl.'"[^>]*>\s*Dashboard\s*<\/a>/')
+        ->not->toMatch('/<a\b[^>]*href="'.$dashboardUrl.'"[^>]*>\s*Overview\s*<\/a>/');
+});
+
 test('preview session can visit the text-only admin shell', function () {
     config()->set('preview.enabled', true);
 

@@ -1,65 +1,88 @@
 <x-layouts::app :title="__('Add subscriber')">
-    <x-admin.page-heading title="Add subscriber" section="Subscriptions">
-        <x-slot:description>Prepare the customer and network profile. Saving remains unavailable until the backend is connected.</x-slot:description>
-    </x-admin.page-heading>
+    @php
+        $personalRows = [
+            [
+                ['account-number', 'Account number', 'text'],
+                ['first-name', 'First name', 'text'],
+                ['last-name', 'Last name', 'text'],
+            ],
+            [['landmark', 'Landmark', 'text']],
+            [['billing-address', 'Billing address', 'text']],
+            [
+                ['contact-number', 'Contact number', 'tel'],
+                ['email-address', 'Email address', 'email'],
+            ],
+            [['coordinates', 'Coordinates', 'text']],
+            [['remarks', 'Remarks', 'text']],
+        ];
+        $subscriptionFields = [
+            ['installation-date', 'Installation date', 'date'],
+            ['plan', 'Plan', 'text'],
+            ['bill-generation', 'Bill generation', 'text'],
+        ];
+        $mikrotikFields = [
+            ['pppoe-name', 'PPPoE name', 'text'],
+            ['pppoe-password', 'PPPoE password', 'password'],
+            ['pppoe-profile', 'PPPoE profile', 'text'],
+            ['pppoe-comment', 'PPPoE comment', 'text'],
+        ];
+        $additionalFields = [
+            ['area', 'Area', 'text'],
+            ['subscription-date', 'Subscription date', 'date'],
+            ['credit-limit', 'Credit limit', 'number'],
+            ['external-url', 'External URL', 'url'],
+            ['image-url', 'Image URL', 'url'],
+            ['olt-device', 'OLT device', 'text'],
+            ['pon-port', 'PON port', 'text'],
+            ['nap-device', 'NAP device', 'text'],
+            ['nap-port', 'NAP port', 'text'],
+            ['onu-name', 'ONU name', 'text'],
+            ['caller-id', 'Caller ID or PPPoE identifier', 'text'],
+            ['mac-address', 'MAC address', 'text'],
+            ['network-remarks', 'Network remarks', 'text'],
+        ];
+    @endphp
 
-    <div class="space-y-6" data-ui-only-form>
+    <x-admin.page-heading title="Add subscriber" section="Subscriptions" />
+
+    <div class="space-y-4" data-ui-only-form>
         <x-admin.frontend-notice />
+        <div class="grid gap-4 xl:grid-cols-2">
+            <x-admin.panel title="Personal Details">
+                <div class="space-y-3">
+                    @foreach ($personalRows as $fields)
+                        <div @class(['grid gap-3', 'sm:grid-cols-2' => count($fields) === 2, 'sm:grid-cols-3' => count($fields) === 3])>
+                            @include('admin.subscribers.fields')
+                        </div>
+                    @endforeach
+                </div>
+            </x-admin.panel>
 
-        <x-admin.panel title="General profile">
-            @php
-                $generalFields = [
-                    ['account-number', 'Account number', 'text'],
-                    ['first-name', 'First name', 'text'],
-                    ['last-name', 'Last name', 'text'],
-                    ['billing-address', 'Billing address', 'text'],
-                    ['area', 'Area', 'text'],
-                    ['contact-number', 'Contact number', 'tel'],
-                    ['email-address', 'Email address', 'email'],
-                    ['coordinates', 'Coordinates', 'text'],
-                    ['subscription-date', 'Subscription date', 'date'],
-                    ['credit-limit', 'Credit limit', 'number'],
-                    ['remarks', 'Remarks', 'text'],
-                    ['external-url', 'External URL', 'url'],
-                    ['image-url', 'Image URL', 'url'],
-                ];
-            @endphp
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                @foreach ($generalFields as [$id, $label, $type])
-                    <label for="{{ $id }}" class="grid gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 {{ in_array($id, ['billing-address', 'remarks']) ? 'md:col-span-2' : '' }}">
-                        {{ $label }}
-                        <input id="{{ $id }}" type="{{ $type }}" value="" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal dark:border-slate-700 dark:bg-slate-950">
-                    </label>
-                @endforeach
+            <div class="min-w-0 space-y-4">
+                <x-admin.panel title="Subscription Details">
+                    <div class="grid gap-3">
+                        @include('admin.subscribers.fields', ['fields' => $subscriptionFields])
+                    </div>
+                </x-admin.panel>
+
+                <x-admin.panel title="MikroTik Details">
+                    <div class="grid gap-3">
+                        @include('admin.subscribers.fields', ['fields' => $mikrotikFields])
+                    </div>
+                </x-admin.panel>
+
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="{{ route('subscribers.index') }}" class="min-w-28 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">Cancel</a>
+                    <button type="button" disabled data-test="subscriber-create-disabled" class="min-w-28 cursor-not-allowed rounded-lg bg-cyan-700 px-4 py-2.5 text-sm font-semibold text-white opacity-50">Submit</button>
+                </div>
             </div>
-        </x-admin.panel>
-
-        <x-admin.panel title="Network profile">
-            @php
-                $networkFields = [
-                    ['olt-device', 'OLT device'],
-                    ['pon-port', 'PON port'],
-                    ['nap-device', 'NAP device'],
-                    ['nap-port', 'NAP port'],
-                    ['onu-name', 'ONU name'],
-                    ['caller-id', 'Caller ID or PPPoE identifier'],
-                    ['mac-address', 'MAC address'],
-                    ['network-remarks', 'Remarks'],
-                ];
-            @endphp
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                @foreach ($networkFields as [$id, $label])
-                    <label for="{{ $id }}" class="grid gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {{ $label }}
-                        <input id="{{ $id }}" type="text" value="" class="rounded-lg border border-slate-300 bg-white px-3 py-2.5 font-normal dark:border-slate-700 dark:bg-slate-950">
-                    </label>
-                @endforeach
-            </div>
-        </x-admin.panel>
-
-        <div class="flex justify-end gap-3">
-            <a href="{{ route('subscribers.index') }}" class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium dark:border-slate-700">Cancel</a>
-            <button type="button" disabled data-test="subscriber-create-disabled" class="cursor-not-allowed rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white opacity-50">Create subscriber</button>
         </div>
+
+        <details class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <summary class="cursor-pointer rounded-xl px-5 py-3 text-sm font-semibold text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cyan-600 dark:text-white">Additional details</summary>
+            <div class="grid gap-3 px-5 pb-5 sm:grid-cols-2 xl:grid-cols-3">
+                @include('admin.subscribers.fields', ['fields' => $additionalFields])
+            </div>
+        </details>
     </div>
 </x-layouts::app>
