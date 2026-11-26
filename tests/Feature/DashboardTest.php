@@ -25,7 +25,7 @@ test('Home and profile actions are in the toolbar and Dashboard stays in the sid
     $html = $response->getContent();
 
     expect($html)
-        ->toMatch('/<header\b[^>]*aria-label="Administration toolbar"[^>]*>.*?<a\b[^>]*href="'.$homeUrl.'"[^>]*aria-label="ISP Operations Home"/s')
+        ->toMatch('/<header\b[^>]*aria-label="Administration toolbar"[^>]*>.*?<a\b[^>]*href="'.$homeUrl.'"[^>]*aria-label="RODJEN Technet Home"/s')
         ->toMatch('/<a\b[^>]*href="'.$dashboardUrl.'"[^>]*>\s*Dashboard\s*<\/a>/')
         ->not->toMatch('/<a\b[^>]*href="'.$dashboardUrl.'"[^>]*>\s*Overview\s*<\/a>/');
     expect(substr_count($html, 'href="'.route('panel.home').'"'))->toBe(1);

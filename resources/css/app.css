@@ -11,6 +11,52 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+    /* Solid colors sampled from the RODJEN wordmark. */
+    --color-brand-blue: #0202ed;
+    --color-brand-green: #03fc05;
+    --color-brand-red: #f30404;
+
+    /* Soft neutral surfaces with enough separation for cards and controls. */
+    --color-slate-50: #f6f7fa;
+    --color-slate-100: #eef1f7;
+    --color-slate-200: #dfe5ef;
+    --color-slate-300: #cbd4e3;
+    --color-slate-400: #9aa8bf;
+    --color-slate-500: #5e6c84;
+    --color-slate-600: #4c5a6f;
+    --color-slate-700: #354154;
+    --color-slate-800: #242e3c;
+    --color-slate-900: #171d29;
+    --color-slate-950: #0a0d14;
+
+    /* Logo blue tints for text, focus rings, and subtle backgrounds. */
+    --color-cyan-50: color-mix(in srgb, var(--color-brand-blue) 5%, white);
+    --color-cyan-100: #e7ebff;
+    --color-cyan-200: #cfd8fb;
+    --color-cyan-300: #a5b0ff;
+    --color-cyan-400: #8591ff;
+    --color-cyan-500: #6474fc;
+    --color-cyan-600: #4249e0;
+    --color-cyan-700: #3044a6;
+    --color-cyan-800: #22269e;
+    --color-cyan-900: #1e216f;
+    --color-cyan-950: #161842;
+
+    /* Green for status and red for errors, with separate light and dark tints. */
+    --color-emerald-50: color-mix(in srgb, var(--color-brand-green) 9%, white);
+    --color-emerald-300: color-mix(in srgb, var(--color-brand-green) 42%, white);
+    --color-emerald-700: #197829;
+    --color-emerald-800: #145722;
+    --color-emerald-950: color-mix(in srgb, var(--color-brand-green) 12%, var(--color-slate-950));
+
+    --color-red-50: color-mix(in srgb, var(--color-brand-red) 6%, white);
+    --color-red-300: color-mix(in srgb, var(--color-brand-red) 34%, white);
+    --color-red-400: color-mix(in srgb, var(--color-brand-red) 50%, white);
+    --color-red-500: color-mix(in srgb, var(--color-brand-red) 88%, black);
+    --color-red-600: color-mix(in srgb, var(--color-brand-red) 78%, black);
+    --color-red-700: color-mix(in srgb, var(--color-brand-red) 65%, black);
+    --color-red-950: color-mix(in srgb, var(--color-brand-red) 20%, var(--color-slate-950));
+
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
     --color-zinc-200: #e5e5e5;
@@ -23,8 +69,8 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
+    --color-accent: var(--color-cyan-700);
+    --color-accent-content: var(--color-cyan-700);
     --color-accent-foreground: var(--color-white);
 }
 
@@ -33,7 +79,16 @@
 }
 
 html {
-    background: #f8fafc;
+    background-color: var(--color-slate-50);
+    color-scheme: light;
+}
+
+@media (width >= 64rem) {
+    .rodjen-auth {
+        background-image: linear-gradient(#eef1f6d9, #eef1f6d9), var(--rodjen-auth-light);
+        background-position: center;
+        background-size: cover;
+    }
 }
 
 .scrollbar-hidden {
@@ -52,14 +107,6 @@ html {
     block-size: 1rem;
     background-color: currentColor;
     mask: var(--sidebar-icon) center / contain no-repeat;
-}
-
-@layer theme {
-    .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
-    }
 }
 
 @layer base {

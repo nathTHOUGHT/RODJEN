@@ -89,7 +89,7 @@
                                     >
                                         <time datetime="{{ $dateKey }}" @class([
                                             'inline-flex size-7 items-center justify-center rounded-full text-xs font-semibold',
-                                            'bg-cyan-700 text-white' => $isToday,
+                                            'bg-cyan-100 font-semibold text-cyan-900' => $isToday,
                                         ])>{{ $date->day }}</time>
 
                                         @if ($day['notes']->isNotEmpty())

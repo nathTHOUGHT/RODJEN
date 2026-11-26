@@ -52,12 +52,12 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="flow-root min-h-screen bg-slate-50 text-slate-700 antialiased dark:bg-slate-950 dark:text-slate-200">
+    <body class="flow-root min-h-screen bg-slate-50 text-slate-700 antialiased">
         <div x-data="{ navigationOpen: false }" class="m-2 grid gap-2.5 p-2 sm:m-3 lg:min-h-[calc(100dvh-1.5rem)] lg:grid-cols-[14rem_minmax(0,1fr)] lg:grid-rows-[3.5rem_1fr]">
             @include('layouts.app.panel-header')
             <aside
                 id="panel-navigation"
-                class="fixed inset-y-0 left-0 z-40 flex w-65 -translate-x-full flex-col bg-slate-900 transition-transform data-[open=true]:translate-x-0 lg:sticky lg:top-[4.625rem] lg:col-start-1 lg:row-start-2 lg:h-[calc(100dvh-6.75rem)] lg:w-full lg:translate-x-0 lg:rounded-lg lg:border lg:border-slate-700"
+                class="fixed inset-y-0 left-0 z-40 flex w-65 -translate-x-full flex-col bg-slate-100 transition-transform data-[open=true]:translate-x-0 lg:sticky lg:top-[4.625rem] lg:col-start-1 lg:row-start-2 lg:h-[calc(100dvh-6.75rem)] lg:w-full lg:translate-x-0 lg:rounded-lg lg:border lg:border-slate-200"
                 x-bind:data-open="navigationOpen"
                 aria-label="Primary navigation"
             >
@@ -65,7 +65,7 @@
                     @foreach ($navigationGroups as $group => $items)
                         <div>
                             @if (is_string($group))
-                                <h2 class="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{{ $group }}</h2>
+                                    <h2 class="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">{{ $group }}</h2>
                             @endif
                             <div @class(['space-y-1', 'mt-2' => is_string($group)])>
                                 @foreach ($items as $item)
@@ -79,9 +79,9 @@
                                         style="--sidebar-icon: url('{{ asset('icons/sidebar/'.$item['icon'].'.svg') }}')"
                                         @if ($current) aria-current="page" @endif
                                         @class([
-                                            'sidebar-icon flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-cyan-300 focus-visible:outline-offset-[-2px]',
-                                            'bg-cyan-600 text-white' => $active,
-                                            'text-slate-300 hover:bg-slate-800 hover:text-white' => ! $active,
+                                            'sidebar-icon flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-cyan-600 focus-visible:outline-offset-[-2px]',
+                                            'bg-cyan-100 font-semibold text-cyan-900 inset-ring inset-ring-cyan-200' => $active,
+                                            'text-slate-700 hover:bg-white hover:text-cyan-800' => ! $active,
                                         ])
                                     >
                                         {{ $item['label'] }}
@@ -102,7 +102,7 @@
                 x-cloak
                 x-show="navigationOpen"
                 x-on:click="navigationOpen = false"
-                class="fixed inset-0 z-30 bg-slate-950/60 lg:hidden"
+                class="fixed inset-0 z-30 bg-slate-700/30 lg:hidden"
                 aria-label="Close navigation"
             ></button>
         </div>

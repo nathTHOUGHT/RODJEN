@@ -2,14 +2,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <title>
-    {{ filled($title ?? null) ? $title.' - '.config('app.name', 'Laravel') : config('app.name', 'Laravel') }}
+    {{ filled($title ?? null) ? $title.' - RODJEN Technet' : 'RODJEN Technet' }}
 </title>
 
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="{{ asset('brand/rodjen-icon.png') }}" type="image/png">
+<link rel="apple-touch-icon" href="{{ asset('brand/rodjen-icon.png') }}">
 
 @fonts
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
+<script>window.Flux.applyAppearance('light')</script>

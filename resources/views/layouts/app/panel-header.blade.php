@@ -2,7 +2,7 @@
     $initials = $authenticatedUser?->initials() ?? str($displayName)->explode(' ')->filter()->take(2)->map(fn ($part) => str($part)->substr(0, 1)->upper()->value())->implode('');
 @endphp
 
-<header class="sticky top-2 z-30 flex h-14 min-w-0 items-center gap-2 rounded-lg border border-slate-300 bg-white px-2.5 sm:gap-3 sm:px-3 lg:col-span-2 lg:col-start-1 lg:row-start-1 dark:border-slate-700 dark:bg-slate-900" aria-label="Administration toolbar">
+<header class="sticky top-2 z-30 flex h-14 min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 shadow-xs sm:gap-3 sm:px-3 lg:col-span-2 lg:col-start-1 lg:row-start-1" aria-label="Administration toolbar">
     <button
         type="button"
         class="shrink-0 rounded-md border border-slate-300 px-2.5 py-2 text-sm lg:hidden dark:border-slate-700"
@@ -13,15 +13,21 @@
     >Menu</button>
     <a
         href="{{ $homeUrl }}"
-        aria-label="ISP Operations Home"
+        aria-label="RODJEN Technet Home"
         @if ($currentRoute === 'panel.home') aria-current="page" @endif
-        style="--sidebar-icon: url('{{ asset('icons/sidebar/house.svg') }}')"
-        class="sidebar-icon flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 text-cyan-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-cyan-600 sm:px-2.5 dark:text-cyan-300 dark:hover:bg-slate-800"
+        class="flex shrink-0 items-center gap-3 rounded-md px-1 py-0.5 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 sm:px-2"
     >
-        <span>
-            <span class="block text-[10px] font-semibold uppercase tracking-wide">ISP Operations</span>
-            <span class="hidden text-sm font-semibold text-slate-900 sm:block dark:text-white">Administration Panel</span>
-        </span>
+        <span
+            aria-hidden="true"
+            class="size-8 bg-contain bg-center bg-no-repeat sm:hidden"
+            style="background-image: url('{{ asset('brand/rodjen-icon.png') }}')"
+        ></span>
+        <span
+            aria-hidden="true"
+            class="hidden h-9 w-32 bg-contain bg-center bg-no-repeat sm:block"
+            style="background-image: url('{{ asset('brand/rodjen-wordmark.png') }}')"
+        ></span>
+        <span class="hidden border-l border-slate-200 pl-3 text-sm font-semibold text-slate-700 md:block">Administration Panel</span>
     </a>
 
     <div

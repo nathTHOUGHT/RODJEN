@@ -5,7 +5,7 @@
         <x-admin.frontend-notice />
         <x-admin.panel title="Records">
             <x-slot:actions>
-                <a href="{{ route('subscribers.create') }}" class="rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white">Add subscriber</a>
+                <a href="{{ route('subscribers.create') }}" class="rounded-md bg-cyan-700 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Add subscriber</a>
             </x-slot:actions>
             <div class="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 @foreach ([['records-area', 'Area'], ['records-status', 'Status'], ['due-from', 'Due from'], ['due-to', 'Due to'], ['records-search', 'Search']] as [$id, $label])
@@ -36,7 +36,12 @@
                             </td>
                             <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['service']['Plan'] }}</td>
                             <td class="whitespace-nowrap px-4 py-4">Fiber</td>
-                            <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['status'] }}</td>
+                            <td class="whitespace-nowrap px-4 py-4">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                    <span aria-hidden="true" class="size-1.5 rounded-full bg-emerald-700 dark:bg-brand-green"></span>
+                                    {{ $sampleSubscriber['status'] }}
+                                </span>
+                            </td>
                             <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['balance'] }}</td>
                             <td class="whitespace-nowrap px-4 py-4">{{ $sampleSubscriber['personal']['Remarks'] }}</td>
                         </tr>
