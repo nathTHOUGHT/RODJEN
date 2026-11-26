@@ -15,18 +15,39 @@ test('authenticated users can visit the dashboard', function () {
     $response->assertOk();
 });
 
-test('the sidebar header opens Home and Dashboard has a direct navigation item', function () {
+test('Home and profile actions are in the toolbar and Dashboard stays in the sidebar', function () {
     $this->actingAs(User::factory()->create());
 
     $response = $this->get(route('subscribers.index'))->assertOk();
     $homeUrl = preg_quote(url('/home'), '/');
     $dashboardUrl = preg_quote(route('dashboard'), '/');
 
-    expect($response->getContent())
-        ->toMatch('/<a\b[^>]*href="'.$homeUrl.'"[^>]*>\s*<span[^>]*>ISP Operations<\/span>/')
+    $html = $response->getContent();
+
+    expect($html)
+        ->toMatch('/<header\b[^>]*aria-label="Administration toolbar"[^>]*>.*?<a\b[^>]*href="'.$homeUrl.'"[^>]*aria-label="ISP Operations Home"/s')
         ->toMatch('/<a\b[^>]*href="'.$dashboardUrl.'"[^>]*>\s*Dashboard\s*<\/a>/')
         ->not->toMatch('/<a\b[^>]*href="'.$dashboardUrl.'"[^>]*>\s*Overview\s*<\/a>/');
+    expect(substr_count($html, 'href="'.route('panel.home').'"'))->toBe(1);
+    expect(substr_count($html, 'data-test="logout-button"'))->toBe(1);
+    expect($html)->toMatch('/id="home-profile-menu".*?data-test="logout-button"/s');
 });
+
+test('panel pages display the shared toolbar without replacing their content', function (string $route, string $title) {
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route($route))
+        ->assertOk()
+        ->assertSee('aria-label="Administration toolbar"', false)
+        ->assertSee('id="home-page-search"', false)
+        ->assertSee('aria-label="Profile menu"', false)
+        ->assertSee('>'.$title.'</h1>', false)
+        ->assertDontSee(' data-flux-main', false)
+        ->assertDontSee('id="calendar-pane"', false);
+})->with([
+    'dashboard' => ['dashboard', 'Dashboard'],
+    'subscriber records' => ['subscribers.index', 'Subscriber records'],
+]);
 
 test('preview session can visit the text-only admin shell', function () {
     config()->set('preview.enabled', true);

@@ -1,29 +1,31 @@
 @php
-    $searchPages = collect($navigationGroups)->flatMap(function ($items, $group) {
-        return collect($items)->map(fn ($item) => [
-            'label' => $item['label'],
-            'group' => is_string($group) ? $group : '',
-            'url' => route($item['route']),
-        ]);
-    })->prepend(['label' => 'Home', 'group' => '', 'url' => route('panel.home')])->values()->all();
     $initials = $authenticatedUser?->initials() ?? str($displayName)->explode(' ')->filter()->take(2)->map(fn ($part) => str($part)->substr(0, 1)->upper()->value())->implode('');
 @endphp
 
-<header class="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-slate-200 bg-white px-3 sm:gap-4 sm:px-6 lg:col-span-2 dark:border-slate-800 dark:bg-slate-900" aria-label="Home toolbar">
+<header class="sticky top-2 z-30 flex h-14 min-w-0 items-center gap-2 rounded-lg border border-slate-300 bg-white px-2.5 sm:gap-3 sm:px-3 lg:col-span-2 lg:col-start-1 lg:row-start-1 dark:border-slate-700 dark:bg-slate-900" aria-label="Administration toolbar">
     <button
         type="button"
         class="shrink-0 rounded-md border border-slate-300 px-2.5 py-2 text-sm lg:hidden dark:border-slate-700"
         x-on:click="navigationOpen = !navigationOpen"
         x-bind:aria-expanded="navigationOpen"
+        aria-controls="panel-navigation"
         aria-label="Toggle navigation"
     >Menu</button>
-    <a href="{{ route('panel.home') }}" class="shrink-0 rounded-md px-1 py-1.5 focus-visible:outline-2 focus-visible:outline-cyan-600 sm:px-2" aria-label="ISP Operations Home">
-        <span class="block text-[10px] font-semibold uppercase tracking-wide text-cyan-800 dark:text-cyan-300">ISP Operations</span>
-        <span class="hidden text-sm font-semibold text-slate-900 sm:block dark:text-white">Administration Panel</span>
+    <a
+        href="{{ $homeUrl }}"
+        aria-label="ISP Operations Home"
+        @if ($currentRoute === 'panel.home') aria-current="page" @endif
+        style="--sidebar-icon: url('{{ asset('icons/sidebar/house.svg') }}')"
+        class="sidebar-icon flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 text-cyan-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-cyan-600 sm:px-2.5 dark:text-cyan-300 dark:hover:bg-slate-800"
+    >
+        <span>
+            <span class="block text-[10px] font-semibold uppercase tracking-wide">ISP Operations</span>
+            <span class="hidden text-sm font-semibold text-slate-900 sm:block dark:text-white">Administration Panel</span>
+        </span>
     </a>
 
     <div
-        class="relative ml-auto min-w-0 max-w-80 flex-1"
+        class="relative ml-auto min-w-0 max-w-52 flex-1"
         role="search"
         aria-label="Search panel pages"
         x-data="{
@@ -95,7 +97,12 @@
                 <p class="truncate border-b border-slate-100 px-2.5 py-2 text-sm font-medium text-slate-900 dark:border-slate-800 dark:text-white">{{ $displayName }}</p>
                 <form method="POST" action="{{ $logoutRoute }}">
                     @csrf
-                    <button type="submit" class="mt-1 block w-full rounded-md px-2.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:text-slate-200 dark:hover:bg-slate-800">Log out</button>
+                    <button
+                        type="submit"
+                        data-test="logout-button"
+                        style="--sidebar-icon: url('{{ asset('icons/sidebar/log-out.svg') }}')"
+                        class="sidebar-icon mt-1 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                    >Log out</button>
                 </form>
             </div>
         </div>

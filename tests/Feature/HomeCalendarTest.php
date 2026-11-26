@@ -7,7 +7,9 @@ test('Home displays the calendar workspace and scheduled bills preview', functio
     $this->actingAs(User::factory()->create())
         ->get(route('panel.home'))
         ->assertOk()
-        ->assertSeeInOrder(['Calendar', 'Add event', 'Scheduled bills', 'No scheduled bills to display', 'Reminders'])
+        ->assertSeeInOrder(['Calendar', 'Add event', 'Reminders', 'Scheduled bills', 'No scheduled bills to display'])
+        ->assertSee('id="calendar-pane"', false)
+        ->assertSee('id="scheduled-bills"', false)
         ->assertSee('id="scheduled-bill-dialog"', false)
         ->assertSee('id="reminders"', false);
 });
