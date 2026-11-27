@@ -1,9 +1,9 @@
+
 <?php
 
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,13 +23,13 @@ class EnsurePanelAccess
             return $next($request);
         }
 
-        if (! $request->user()) {
+        $user = $request->user();
+
+        if (! $user) {
             return redirect()->guest(route('login'));
         }
 
-        $user = $request->user();
-
-        if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+        if (! $user->hasVerifiedEmail()) {
             return redirect()->guest(route('verification.notice'));
         }
 
