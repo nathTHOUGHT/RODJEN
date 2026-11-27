@@ -1,7 +1,6 @@
-<x-layouts::app :title="__('System logs')">
-    <x-admin.page-heading title="System logs" section="Logs" />
+<x-admin.workspace title="Logs" :tabs="['logs.system' => 'System logs', 'logs.activity' => 'Activity logs']" active="logs.system">
     <div class="space-y-4">
-        <x-admin.panel title="Records">
+        <x-admin.panel title="System logs">
             <x-slot:actions>
                 <button type="button" disabled data-test="system-log-export-disabled" class="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700">Export</button>
             </x-slot:actions>
@@ -17,4 +16,4 @@
             <p class="mt-4 text-sm text-slate-500">Pagination will appear when logs are available.</p>
         </x-admin.panel>
     </div>
-</x-layouts::app>
+</x-admin.workspace>

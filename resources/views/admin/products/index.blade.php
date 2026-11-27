@@ -1,6 +1,4 @@
-<x-layouts::app :title="__('Products and services')">
-    <x-admin.page-heading title="Products and services" section="Subscriptions" />
-
+<x-admin.settings heading="Products and services">
     <div class="space-y-6">
         <x-admin.frontend-notice />
         <x-admin.panel title="Service catalogue">
@@ -14,4 +12,4 @@
             <x-admin.empty-table :columns="['Product', 'Profile group', 'Transaction type', 'Price', 'Usage or account count']" message="No products or services yet" />
         </x-admin.panel>
     </div>
-</x-layouts::app>
+</x-admin.settings>

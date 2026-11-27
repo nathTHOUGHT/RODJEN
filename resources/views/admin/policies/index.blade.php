@@ -1,6 +1,4 @@
-<x-layouts::app :title="__('Policies and conditions')">
-    <x-admin.page-heading title="Policies and conditions" section="Subscriptions" />
-
+<x-admin.settings heading="Policies and conditions">
     <div class="space-y-6">
         <x-admin.frontend-notice />
         <x-admin.panel title="Policy rules">
@@ -14,4 +12,4 @@
             <x-admin.empty-table :columns="['Policy', 'PPPoE action', 'PPPoE conditions', 'Hotspot action', 'Hotspot conditions', 'IPoE action', 'IPoE conditions']" message="No policies or conditions yet" />
         </x-admin.panel>
     </div>
-</x-layouts::app>
+</x-admin.settings>

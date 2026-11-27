@@ -4,47 +4,49 @@
     $logoutRoute = $authenticatedUser ? route('logout') : route('preview.logout');
     $currentRoute = request()->route()?->getName();
     $navigationGroups = [
-        [
+        'Overview' => [
             ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'layout-dashboard'],
-        ],
-        'Subscriptions' => [
-            ['label' => 'Add subscriber', 'route' => 'subscribers.create', 'icon' => 'user-round-plus'],
-            ['label' => 'Subscriber records', 'route' => 'subscribers.index', 'icon' => 'contact-round'],
-            ['label' => 'Products and services', 'route' => 'products.index', 'icon' => 'package'],
-            ['label' => 'Policies and conditions', 'route' => 'policies.index', 'icon' => 'shield-check'],
-        ],
-        [
             ['label' => 'Reports', 'route' => 'reports.index', 'icon' => 'chart-no-axes-combined'],
         ],
-        'API Integration' => [
-            ['label' => 'Messaging', 'route' => 'integrations.messaging', 'icon' => 'messages-square'],
-            ['label' => 'Scheduler', 'route' => 'integrations.scheduler', 'icon' => 'clock'],
-            ['label' => 'Settings', 'route' => 'integrations.settings', 'icon' => 'plug'],
+        'Subscriptions' => [
+            ['label' => 'Subscriber records', 'caption' => 'Records', 'route' => 'subscribers.index', 'icon' => 'contact-round'],
+            ['label' => 'Add subscriber', 'caption' => '+', 'route' => 'subscribers.create'],
         ],
-        'Settings' => [
-            ['label' => 'Router', 'route' => 'router.index', 'icon' => 'router'],
-            ['label' => 'Router backups', 'route' => 'router.backups', 'icon' => 'database-backup'],
-            ['label' => 'Staff users', 'route' => 'staff.index', 'icon' => 'users-round'],
+        'Communication' => [
+            ['label' => 'Chats', 'route' => 'integrations.messaging', 'icon' => 'messages-square'],
+        ],
+        'Operations' => [
+            ['label' => 'Job Order', 'route' => 'job-orders.index', 'icon' => 'receipt'],
+            ['label' => 'Inventory', 'route' => 'inventory.index', 'icon' => 'package'],
         ],
         'Logs' => [
-            ['label' => 'System logs', 'route' => 'logs.system', 'icon' => 'scroll-text'],
-            ['label' => 'Activity logs', 'route' => 'logs.activity', 'icon' => 'activity'],
+            ['label' => 'Logs', 'route' => 'logs.index', 'icon' => 'scroll-text'],
         ],
     ];
 
     $homeUrl = route('panel.home');
     $navigationUrls = [];
-    $searchPages = [['label' => 'Home', 'group' => '', 'url' => $homeUrl]];
+    $settingsUrl = route('panel.settings');
+    $searchPages = [
+        ['label' => 'Home', 'group' => '', 'url' => $homeUrl],
+        ['label' => 'Settings', 'group' => '', 'url' => $settingsUrl],
+    ];
 
     foreach ($navigationGroups as $group => $items) {
-        $groupLabel = is_string($group) ? $group : '';
-
         foreach ($items as $item) {
             $url = route($item['route']);
             $navigationUrls[$item['route']] = $url;
-            $searchPages[] = ['label' => $item['label'], 'group' => $groupLabel, 'url' => $url];
+            $searchPages[] = ['label' => $item['label'], 'group' => $group, 'url' => $url];
         }
     }
+
+    $settingsTabs = require resource_path('data/panel-settings-tabs.php');
+    foreach ($settingsTabs + ['router.backups' => 'Router backups'] as $routeName => $label) {
+        $searchPages[] = ['label' => $label, 'group' => 'Settings', 'url' => route($routeName)];
+    }
+
+    $searchPages[] = ['label' => 'System logs', 'group' => 'Logs', 'url' => route('logs.system')];
+    $searchPages[] = ['label' => 'Activity logs', 'group' => 'Logs', 'url' => route('logs.activity')];
 @endphp
 
 <!DOCTYPE html>
@@ -61,33 +63,46 @@
                 x-bind:data-open="navigationOpen"
                 aria-label="Primary navigation"
             >
-                <nav class="scrollbar-hidden min-h-0 flex-1 space-y-3 overflow-y-auto px-2.5 py-3">
+                <nav class="scrollbar-hidden min-h-0 flex-1 divide-y divide-slate-200 overflow-y-auto px-2.5 py-1">
                     @foreach ($navigationGroups as $group => $items)
-                        <div>
-                            @if (is_string($group))
-                                    <h2 class="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">{{ $group }}</h2>
-                            @endif
-                            <div @class(['space-y-1', 'mt-2' => is_string($group)])>
-                                @foreach ($items as $item)
-                                    @php
-                                        $routeName = $item['route'];
-                                        $current = $routeName === $currentRoute;
-                                        $active = $current || ($routeName === 'subscribers.index' && $currentRoute === 'subscribers.details');
-                                    @endphp
-                                    <a
-                                        href="{{ $navigationUrls[$routeName] }}"
+                        <div
+                            role="group"
+                            aria-label="{{ $group }}"
+                            @class([
+                                'py-2',
+                                'grid grid-cols-[minmax(0,1fr)_auto] gap-1' => $group === 'Subscriptions',
+                                'space-y-1' => $group !== 'Subscriptions',
+                            ])
+                        >
+                            @foreach ($items as $item)
+                                @php
+                                    $routeName = $item['route'];
+                                    $current = $routeName === $currentRoute;
+                                    $active = $current
+                                        || ($routeName === 'subscribers.index' && $currentRoute === 'subscribers.details')
+                                        || ($routeName === 'logs.index' && request()->routeIs('logs.*'));
+                                @endphp
+                                <a
+                                    href="{{ $navigationUrls[$routeName] }}"
+                                    @isset($item['icon'])
                                         style="--sidebar-icon: url('{{ asset('icons/sidebar/'.$item['icon'].'.svg') }}')"
-                                        @if ($current) aria-current="page" @endif
-                                        @class([
-                                            'sidebar-icon flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-cyan-600 focus-visible:outline-offset-[-2px]',
-                                            'bg-cyan-100 font-semibold text-cyan-900 inset-ring inset-ring-cyan-200' => $active,
-                                            'text-slate-700 hover:bg-white hover:text-cyan-800' => ! $active,
-                                        ])
-                                    >
-                                        {{ $item['label'] }}
-                                    </a>
-                                @endforeach
-                            </div>
+                                    @endisset
+                                    @isset($item['caption'])
+                                        aria-label="{{ $item['label'] }}"
+                                    @endisset
+                                    @if ($routeName === 'subscribers.create') title="{{ $item['label'] }}" @endif
+                                    @if ($current) aria-current="page" @endif
+                                    @class([
+                                        'flex items-center rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-cyan-600 focus-visible:outline-offset-[-2px]',
+                                        'sidebar-icon gap-2.5' => isset($item['icon']),
+                                        'min-w-10 justify-center' => $routeName === 'subscribers.create',
+                                        'bg-cyan-100 font-semibold text-cyan-900 inset-ring inset-ring-cyan-200' => $active,
+                                        'text-slate-700 hover:bg-white hover:text-cyan-800' => ! $active,
+                                    ])
+                                >
+                                    {{ $item['caption'] ?? $item['label'] }}
+                                </a>
+                            @endforeach
                         </div>
                     @endforeach
                 </nav>

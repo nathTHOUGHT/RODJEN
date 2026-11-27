@@ -101,6 +101,11 @@
         <div id="home-profile-menu" x-cloak x-show="hovered || expanded" class="absolute right-0 top-full z-10 w-48 pt-2">
             <div class="rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900">
                 <p class="truncate border-b border-slate-100 px-2.5 py-2 text-sm font-medium text-slate-900 dark:border-slate-800 dark:text-white">{{ $displayName }}</p>
+                <a
+                    href="{{ $settingsUrl }}"
+                    style="--sidebar-icon: url('{{ asset('icons/sidebar/plug.svg') }}')"
+                    class="sidebar-icon mt-1 flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-slate-700 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                >Settings</a>
                 <form method="POST" action="{{ $logoutRoute }}">
                     @csrf
                     <button

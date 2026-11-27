@@ -1,4 +1,6 @@
-<x-layouts::app :title="__('Staff users')">
-    <x-admin.page-heading title="Staff users" section="Settings" />
+<x-admin.settings heading="Staff users">
     <x-admin.frontend-notice />
-</x-layouts::app>
+    @auth
+        <a href="{{ route('profile.edit') }}" class="inline-flex rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-cyan-800 hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-cyan-600">My profile</a>
+    @endauth
+</x-admin.settings>

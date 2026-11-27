@@ -17,6 +17,8 @@ Route::middleware('panel.access')->group(function () {
     Route::get('home', [HomeCalendarController::class, 'index'])->name('panel.home');
     Route::post('home/reminders', [HomeCalendarController::class, 'store'])->name('panel.home.reminders.store');
     Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::view('job-orders', 'admin.job-orders.index')->name('job-orders.index');
+    Route::view('inventory', 'admin.inventory.index')->name('inventory.index');
 
     Route::prefix('subscriptions')->group(function () {
         $sampleSubscriber = require resource_path('data/sample-subscriber.php');
@@ -43,12 +45,14 @@ Route::middleware('panel.access')->group(function () {
     });
 
     Route::prefix('panel-settings')->group(function () {
+        Route::get('/', fn () => to_route('products.index'))->name('panel.settings');
         Route::view('router', 'admin.settings.router.index')->name('router.index');
         Route::view('router/backups', 'admin.settings.router.backups')->name('router.backups');
         Route::view('staff', 'admin.settings.users.index')->name('staff.index');
     });
 
     Route::prefix('logs')->group(function () {
+        Route::get('/', fn () => to_route('logs.system'))->name('logs.index');
         Route::view('system', 'admin.logs.system')->name('logs.system');
         Route::view('activity', 'admin.logs.activity')->name('logs.activity');
     });
