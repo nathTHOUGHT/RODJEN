@@ -7,12 +7,14 @@ use App\Models\NetworkAccount;
 use App\Models\Plan;
 use App\Models\Subscriber;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -171,11 +173,124 @@ class SubscriberController extends Controller
                 'comments' => fn ($query) => $query->latest(),
             ])
             ->findOrFail($subscriberId);
+        $plans = Plan::query()
+            ->where('transaction_type', 'mrc')
+            ->orderBy('name')
+            ->get(['id', 'name', 'price', 'speed_mbps']);
 
         return view('admin.subscribers.show', [
             'subscriber' => $subscriber,
             'subscriberData' => $this->detailsFor($subscriber),
+            'plans' => $plans,
         ]);
+    }
+
+    public function updatePersonalDetails(Request $request, string $subscriber): RedirectResponse
+    {
+        $subscriber = Subscriber::query()->findOrFail($this->subscriberId($subscriber));
+        $data = $request->validate([
+            'account_number' => [
+                'required',
+                'string',
+                'regex:/\A[0-9]{8}\z/',
+                Rule::unique('subscribers', 'account_number')->ignore($subscriber->id),
+            ],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
+            'area' => ['nullable', 'string', 'max:100'],
+            'landmark' => ['nullable', 'string', 'max:255'],
+            'billing_address' => ['required', 'string', 'max:1000'],
+            'contact_number' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'coordinates' => ['nullable', 'string', 'max:100'],
+            'remarks' => ['nullable', 'string', 'max:2000'],
+            'external_url' => ['nullable', 'url:http,https', 'max:2048'],
+        ]);
+
+        $subscriber->update($data);
+
+        return to_route('subscribers.details', $subscriber)->with('status', __('Personal details updated.'));
+    }
+
+    public function updateServiceDetails(Request $request, string $subscriber): RedirectResponse
+    {
+        $subscriber = Subscriber::query()->findOrFail($this->subscriberId($subscriber));
+        $data = $request->validate([
+            'plan_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('plans', 'id')->where(fn (QueryBuilder $query) => $query->where('transaction_type', 'mrc')),
+            ],
+            'installation_date' => ['nullable', 'date'],
+            'subscription_date' => ['nullable', 'date'],
+            'billing_day' => ['nullable', 'integer', 'between:1,31'],
+            'credit_limit' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'service_type' => ['required', 'string', 'max:32'],
+            'status' => ['required', 'string', 'max:32'],
+        ]);
+
+        DB::transaction(function () use ($subscriber, $data): void {
+            $subscription = $subscriber->subscription()->lockForUpdate()->firstOrFail();
+            $previousPlanId = (int) ($subscription->plan_id ?? 0);
+            $newPlanId = (int) ($data['plan_id'] ?? 0);
+
+            $subscription->update([
+                'plan_id' => $data['plan_id'] ?? null,
+                'installation_date' => $data['installation_date'] ?? null,
+                'subscription_date' => $data['subscription_date'] ?? null,
+                'billing_day' => $data['billing_day'] ?? null,
+                'credit_limit' => $data['credit_limit'] ?? 0,
+                'service_type' => $data['service_type'],
+                'status' => $data['status'],
+            ]);
+
+            if ($previousPlanId !== $newPlanId) {
+                if ($previousPlanId > 0) {
+                    Plan::query()
+                        ->whereKey($previousPlanId)
+                        ->where('usage_count', '>', 0)
+                        ->decrement('usage_count');
+                }
+
+                if ($newPlanId > 0) {
+                    Plan::query()->whereKey($newPlanId)->increment('usage_count');
+                }
+            }
+        });
+
+        return to_route('subscribers.details', $subscriber)->with('status', __('Service details updated.'));
+    }
+
+    public function updateMikrotikDetails(Request $request, string $subscriber): RedirectResponse
+    {
+        $subscriber = Subscriber::query()
+            ->with('subscription.networkAccount')
+            ->findOrFail($this->subscriberId($subscriber));
+        $networkAccount = $subscriber->subscription?->networkAccount;
+        $data = $request->validate([
+            'username' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('network_accounts', 'username')->ignore($networkAccount?->id ?? 0),
+            ],
+            'password' => ['nullable', 'string', 'max:255'],
+            'profile' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $networkAccount = $networkAccount ?? $subscriber->subscription()->firstOrFail()->networkAccount()->make();
+        $networkAccount->fill([
+            'username' => $data['username'] ?? null,
+            'profile' => $data['profile'] ?? null,
+        ]);
+
+        if (filled($data['password'] ?? null)) {
+            $networkAccount->password = $data['password'];
+        }
+
+        $networkAccount->save();
+
+        return to_route('subscribers.details', $subscriber)->with('status', __('MikroTik details updated.'));
     }
 
     public function storeComment(Request $request, string $subscriber): RedirectResponse
@@ -213,6 +328,7 @@ class SubscriberController extends Controller
                 'Email' => $subscriber->email,
                 'Coordinates' => $subscriber->coordinates,
                 'Remarks' => $subscriber->remarks,
+                'External URL' => $subscriber->external_url,
             ],
             'service' => [
                 'Plan' => $subscription?->plan?->name,
@@ -228,7 +344,7 @@ class SubscriberController extends Controller
             ],
             'mikrotik' => [
                 'Name' => $networkAccount?->username,
-                'Password' => $networkAccount?->getRawOriginal('password') !== null ? 'Configured' : null,
+                'Password' => $networkAccount?->password,
                 'Profile' => $networkAccount?->profile,
                 'Comment' => $networkAccount?->comment,
             ],
@@ -239,7 +355,6 @@ class SubscriberController extends Controller
             'additional' => [
                 'Service state' => $subscription?->status ? str($subscription->status)->headline()->value() : null,
                 'Subscription' => $subscription?->plan?->name,
-                'External URL' => $subscriber->external_url,
                 'Image URL' => $subscriber->image_url,
                 'OLT device' => $networkAccount?->olt_device,
                 'PON port' => $networkAccount?->pon_port,

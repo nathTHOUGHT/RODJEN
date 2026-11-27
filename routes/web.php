@@ -30,6 +30,15 @@ Route::middleware('panel.access')->group(function () {
         Route::post('records/{subscriber}/comments', [SubscriberController::class, 'storeComment'])
             ->whereNumber('subscriber')
             ->name('subscribers.comments.store');
+        Route::patch('records/{subscriber}/personal', [SubscriberController::class, 'updatePersonalDetails'])
+            ->whereNumber('subscriber')
+            ->name('subscribers.personal.update');
+        Route::patch('records/{subscriber}/service', [SubscriberController::class, 'updateServiceDetails'])
+            ->whereNumber('subscriber')
+            ->name('subscribers.service.update');
+        Route::patch('records/{subscriber}/mikrotik', [SubscriberController::class, 'updateMikrotikDetails'])
+            ->whereNumber('subscriber')
+            ->name('subscribers.mikrotik.update');
         Route::get('records/{subscriber}', [SubscriberController::class, 'show'])
             ->whereNumber('subscriber')
             ->name('subscribers.details');

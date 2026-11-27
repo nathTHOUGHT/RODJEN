@@ -56,9 +56,10 @@
         <div class="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)_minmax(0,1.45fr)]">
             @include('admin.subscribers.detail-panel', [
                 'title' => 'Personal Details',
-                'fields' => ['Account number', 'Name', 'Area', 'Landmark', 'Address', 'Contact number', 'Email', 'Coordinates', 'Remarks'],
+                'fields' => ['Account number', 'Name', 'Area', 'Landmark', 'Address', 'Contact number', 'Email', 'Coordinates', 'Remarks', 'External URL'],
                 'values' => $subscriberData['personal'],
                 'editable' => true,
+                'editDialog' => 'subscriber-personal-edit-dialog',
             ])
 
             @include('admin.subscribers.detail-panel', [
@@ -66,6 +67,7 @@
                 'fields' => ['Plan', 'MRC', 'Service type', 'Installation date', 'Subscription date', 'Bill generation day', 'Credit limit', 'Due date', 'Billing status', 'Next due date', 'Billing period', 'Last due date', 'Promise date'],
                 'values' => $subscriberData['service'],
                 'editable' => true,
+                'editDialog' => 'subscriber-service-edit-dialog',
             ])
 
             <x-admin.panel title="Comment list" class="min-w-0">
@@ -101,6 +103,7 @@
                     'fields' => ['Name', 'Password', 'Profile', 'Comment'],
                     'values' => $subscriberData['mikrotik'],
                     'editable' => true,
+                    'editDialog' => 'subscriber-mikrotik-edit-dialog',
                 ])
 
                 @include('admin.subscribers.detail-panel', [

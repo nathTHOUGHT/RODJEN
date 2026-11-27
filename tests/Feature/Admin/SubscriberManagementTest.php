@@ -373,7 +373,7 @@ test('subscriber records preserve valid zero-like text values', function () {
         ->assertSee('>0</td>', false);
 });
 
-test('subscriber details show only the selected persisted account without exposing its password', function () {
+test('subscriber details show only the selected persisted account and its password', function () {
     $plan = monthlyPlan();
 
     $this->post('/subscriptions/records', subscriberPayload([
@@ -411,9 +411,8 @@ test('subscriber details show only the selected persisted account without exposi
         ->assertSee('https://example.com/subscribers/00001234.jpg')
         ->assertSee('AA:BB:CC:DD:EE:FF')
         ->assertSee('Drop cable inspected')
-        ->assertSee('Configured')
+        ->assertSee('selected-secret')
         ->assertDontSee('00000022')
-        ->assertDontSee('selected-secret')
         ->assertDontSee('other-secret');
 });
 
@@ -460,17 +459,17 @@ test('subscriber comments require non-empty text', function () {
     $this->assertDatabaseCount('subscriber_comments', 0);
 });
 
-test('a pppoe password containing zero is still reported as configured', function () {
+test('a pppoe password containing zero is displayed', function () {
     $this->post('/subscriptions/records', subscriberPayload([
         'account_number' => '00000044',
         'pppoe_username' => 'zero-password@rodjen',
         'pppoe_password' => '0',
     ]))->assertSessionHasNoErrors();
 
-    $this->get('/subscriptions/records/1')
-        ->assertOk()
-        ->assertSee('Configured')
-        ->assertDontSee('>0</dd>', false);
+    $response = $this->get('/subscriptions/records/1')->assertOk();
+
+    expect($response->getContent())
+        ->toMatch('/<dt[^>]*>Password<\/dt>\s*<dd[^>]*>\s*0\s*<\/dd>/');
 });
 
 test('subscriber details check panel access before returning a missing record', function () {

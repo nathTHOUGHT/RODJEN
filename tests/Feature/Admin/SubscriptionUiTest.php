@@ -43,6 +43,8 @@ test('add subscriber renders a database-backed form with monthly plans', functio
         ->assertSee('Contact number')
         ->assertSee('Email address')
         ->assertSee('Coordinates')
+        ->assertSee('name="external_url"', false)
+        ->assertSee('aria-label="External URL"', false)
         ->assertSee('Installation date')
         ->assertSee('Plan')
         ->assertSee('Bill generation')
@@ -74,6 +76,37 @@ test('add subscriber renders a database-backed form with monthly plans', functio
         ->assertSee('type="submit"', false)
         ->assertDontSee('data-ui-only-form', false)
         ->assertDontSee('data-test="subscriber-create-disabled"', false);
+});
+
+test('add subscriber exposes an external URL field in personal details', function () {
+    config()->set('preview.enabled', true);
+    $this->withSession([
+        'preview.user' => [
+            'username' => 'admin',
+            'name' => 'Admin',
+        ],
+    ]);
+
+    $this->get(route('subscribers.create'))
+        ->assertOk()
+        ->assertSee('Personal Details')
+        ->assertSee('name="external_url"', false)
+        ->assertSee('aria-label="External URL"', false);
+});
+
+test('add subscriber password input is visible', function () {
+    config()->set('preview.enabled', true);
+    $this->withSession([
+        'preview.user' => [
+            'username' => 'admin',
+            'name' => 'Admin',
+        ],
+    ]);
+
+    $response = $this->get(route('subscribers.create'));
+
+    $response->assertOk();
+    expect($response->getContent())->toMatch('/<input(?=[^>]*name="pppoe_password")(?=[^>]*type="text")/i');
 });
 
 test('account number form input is limited to eight digits and has a generator', function () {

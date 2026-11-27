@@ -14,6 +14,7 @@
             ],
             [['coordinates', 'coordinates', 'Coordinates', 'text']],
             [['remarks', 'remarks', 'Remarks', 'text', 'uppercase']],
+            [['external_url', 'external-url', 'External URL', 'url']],
         ];
         $installationFields = [
             ['installation_date', 'installation-date', 'Installation date', 'date'],
@@ -23,7 +24,7 @@
         ];
         $mikrotikFields = [
             ['pppoe_username', 'pppoe-name', 'PPPoE name', 'text'],
-            ['pppoe_password', 'pppoe-password', 'PPPoE password', 'password'],
+            ['pppoe_password', 'pppoe-password', 'PPPoE password', 'text'],
             ['pppoe_profile', 'pppoe-profile', 'PPPoE profile', 'text'],
             ['pppoe_comment', 'pppoe-comment', 'PPPoE comment', 'text', null, 'readonly'],
         ];
@@ -31,7 +32,6 @@
             ['area', 'area', 'Area', 'text'],
             ['subscription_date', 'subscription-date', 'Subscription date', 'date'],
             ['credit_limit', 'credit-limit', 'Credit limit', 'number'],
-            ['external_url', 'external-url', 'External URL', 'url'],
             ['image_url', 'image-url', 'Image URL', 'url'],
             ['olt_device', 'olt-device', 'OLT device', 'text'],
             ['pon_port', 'pon-port', 'PON port', 'text'],

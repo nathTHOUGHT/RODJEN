@@ -4,7 +4,7 @@
         [$name, $id, $label, $type] = $field;
         $format = $field[4] ?? null;
 
-        $isPassword = $type === 'password';
+        $isPassword = $name === 'pppoe_password' || $type === 'password';
         $oldValue = $isPassword ? '' : old($name);
         $oldFirstName = old('first_name', '');
         $oldLastName = old('last_name', '');

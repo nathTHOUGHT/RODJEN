@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Plan;
 use App\Models\Subscriber;
+use Database\Seeders\PlanSeeder;
 use Illuminate\Testing\TestResponse;
 
-function subscriberDetailsResponse(object $testCase): TestResponse
+function subscriberDetailsResponse(object $testCase, array $attributes = []): TestResponse
 {
     config()->set('preview.enabled', true);
 
@@ -14,21 +16,34 @@ function subscriberDetailsResponse(object $testCase): TestResponse
                 'name' => 'Admin',
             ],
         ])
-        ->post(route('subscribers.store'), [
+        ->post(route('subscribers.store'), array_merge([
             'account_number' => '00001234',
             'first_name' => 'Alex',
             'last_name' => 'Santos',
             'billing_address' => '123 Sample Lane',
             'pppoe_username' => 'alex@rodjen',
             'pppoe_password' => 'never-render-this-secret',
+            'pppoe_comment' => 'Initial MikroTik comment',
             'caller_id' => 'CALLER-00001234',
-        ])
+        ], $attributes))
         ->assertSessionHasNoErrors();
 
     $subscriber = Subscriber::query()->firstOrFail();
 
     return $testCase->get(route('subscribers.details', $subscriber));
 }
+
+test('subscriber details renders the personal external URL as a safe external link', function () {
+    $url = 'https://example.com/subscribers/00001234';
+    $response = subscriberDetailsResponse($this, ['external_url' => $url]);
+
+    $response
+        ->assertOk()
+        ->assertSee('External URL')
+        ->assertSee('href="'.$url.'"', false)
+        ->assertSee('target="_blank"', false)
+        ->assertSee('rel="noopener noreferrer"', false);
+});
 
 function expectDisabledSubscriberAction(string $html, string $testMarker): void
 {
@@ -142,9 +157,8 @@ test('subscriber detail displays persisted identity and keeps future data region
         ->assertSee('00001234')
         ->assertSee('Alex Santos')
         ->assertSee('alex@rodjen')
-        ->assertSee('Configured')
+        ->assertSee('never-render-this-secret')
         ->assertSee('CALLER-00001234')
-        ->assertDontSee('never-render-this-secret')
         ->assertSee('Not available')
         ->assertSee('No comments yet')
         ->assertSee('No transactions yet')
@@ -155,4 +169,74 @@ test('subscriber detail displays persisted identity and keeps future data region
 
     expect($html)
         ->not->toMatch('/<button(?![^>]*disabled)[^>]*>\s*(Confirm|Update|Submit)\s*<\/button>/i');
+});
+
+test('subscriber personal service and MikroTik sections have separate working editors', function () {
+    $this->seed(PlanSeeder::class);
+    $response = subscriberDetailsResponse($this);
+    $subscriber = Subscriber::query()->firstOrFail();
+    $plan = Plan::query()->where('transaction_type', 'mrc')->firstOrFail();
+
+    $response
+        ->assertOk()
+        ->assertSee('aria-label="Edit Personal Details"', false)
+        ->assertSee('aria-label="Edit Service Details"', false)
+        ->assertSee('aria-label="Edit MikroTik Details"', false)
+        ->assertSee('id="subscriber-personal-edit-dialog"', false)
+        ->assertSee('id="subscriber-service-edit-dialog"', false)
+        ->assertSee('id="subscriber-mikrotik-edit-dialog"', false)
+        ->assertSee('name="account_number"', false)
+        ->assertSee('name="plan_id"', false)
+        ->assertSee('name="username"', false)
+        ->assertSee('value="never-render-this-secret"', false)
+        ->assertSee('Initial MikroTik comment')
+        ->assertDontSee('<textarea name="comment" rows="3" maxlength="2000"', false);
+
+    $this->patch(route('subscribers.personal.update', $subscriber), [
+        'account_number' => '00004321',
+        'first_name' => 'Jamie',
+        'last_name' => 'Reyes',
+        'area' => 'North Zone',
+        'landmark' => 'Near the park',
+        'billing_address' => '456 New Street',
+        'contact_number' => '09123456789',
+        'email' => 'jamie@example.com',
+        'coordinates' => '14.5, 121.0',
+        'remarks' => 'Updated personal details',
+        'external_url' => 'https://example.com/accounts/00004321',
+    ])->assertRedirect(route('subscribers.details', $subscriber));
+
+    $subscriber->refresh();
+    expect($subscriber->account_number)->toBe('00004321')
+        ->and($subscriber->first_name)->toBe('Jamie')
+        ->and($subscriber->area)->toBe('North Zone')
+        ->and($subscriber->external_url)->toBe('https://example.com/accounts/00004321');
+
+    $this->patch(route('subscribers.service.update', $subscriber), [
+        'plan_id' => $plan->id,
+        'service_type' => 'fiber',
+        'status' => 'active',
+        'installation_date' => '2026-01-15',
+        'subscription_date' => '2026-01-20',
+        'billing_day' => 15,
+        'credit_limit' => '250.00',
+    ])->assertRedirect(route('subscribers.details', $subscriber));
+
+    $subscriber->refresh()->load('subscription');
+    expect($subscriber->subscription->plan_id)->toBe($plan->id)
+        ->and($subscriber->subscription->billing_day)->toBe(15)
+        ->and($subscriber->subscription->credit_limit)->toBe('250.00');
+
+    $this->patch(route('subscribers.mikrotik.update', $subscriber), [
+        'username' => 'jamie@rodjen',
+        'password' => 'updated-secret',
+        'profile' => 'standard',
+        'comment' => 'This value must be ignored',
+    ])->assertRedirect(route('subscribers.details', $subscriber));
+
+    $networkAccount = $subscriber->subscription()->firstOrFail()->networkAccount()->firstOrFail();
+    expect($networkAccount->username)->toBe('jamie@rodjen')
+        ->and($networkAccount->password)->toBe('updated-secret')
+        ->and($networkAccount->profile)->toBe('standard')
+        ->and($networkAccount->comment)->toBe('Initial MikroTik comment');
 });
