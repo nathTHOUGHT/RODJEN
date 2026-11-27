@@ -34,7 +34,7 @@ class StaffReminder extends Model
         return match ($this->repeat) {
             'daily' => true,
             'weekly' => $date->dayOfWeek === $this->starts_on->dayOfWeek,
-            'monthly' => $date->day === $this->starts_on->day,
+            'monthly' => $date->day === min($this->starts_on->day, $date->daysInMonth),
             default => $date->isSameDay($this->starts_on),
         };
     }

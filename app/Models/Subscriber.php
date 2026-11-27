@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -24,13 +23,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 ])]
 class Subscriber extends Model
 {
-    use HasFactory;
-
+    /** @return HasOne<Subscription, $this> */
     public function subscription(): HasOne
     {
         return $this->hasOne(Subscription::class);
     }
 
+    /** @return HasMany<SubscriberComment, $this> */
     public function comments(): HasMany
     {
         return $this->hasMany(SubscriberComment::class);

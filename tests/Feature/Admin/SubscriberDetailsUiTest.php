@@ -2,6 +2,7 @@
 
 use App\Models\Plan;
 use App\Models\Subscriber;
+use App\Models\User;
 use Database\Seeders\PlanSeeder;
 use Illuminate\Testing\TestResponse;
 
@@ -169,6 +170,27 @@ test('subscriber detail displays persisted identity and keeps future data region
 
     expect($html)
         ->not->toMatch('/<button(?![^>]*disabled)[^>]*>\s*(Confirm|Update|Submit)\s*<\/button>/i');
+});
+
+test('admins cannot view or change MikroTik passwords', function () {
+    subscriberDetailsResponse($this);
+    $subscriber = Subscriber::query()->firstOrFail();
+    $admin = User::factory()->create(['user_type' => 'admin']);
+
+    $this->actingAs($admin)
+        ->get(route('subscribers.details', $subscriber))
+        ->assertOk()
+        ->assertSee('Hidden for your role')
+        ->assertDontSee('never-render-this-secret');
+
+    $this->patch(route('subscribers.mikrotik.update', $subscriber), [
+        'username' => 'alex@rodjen',
+        'profile' => 'default',
+        'password' => 'replacement-secret',
+    ])->assertRedirect(route('subscribers.details', $subscriber));
+
+    expect($subscriber->refresh()->subscription->networkAccount->password)
+        ->toBe('never-render-this-secret');
 });
 
 test('subscriber personal service and MikroTik sections have separate working editors', function () {

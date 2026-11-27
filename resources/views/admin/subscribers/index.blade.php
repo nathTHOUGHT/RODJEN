@@ -55,7 +55,23 @@
                         @forelse ($subscribers as $subscriber)
                             @php
                                 $subscription = $subscriber->subscription;
-                                $statusLabel = $subscription?->status ? str($subscription->status)->headline() : __('Not available');
+                                $status = $subscription?->status;
+                                $statusLabel = $status !== null && $status !== ''
+                                    ? str($status)->headline()
+                                    : __('Not available');
+                                $statusBadge = match ($status) {
+                                    'active' => 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+                                    'suspended' => 'bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+                                    'inactive' => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+                                    default => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+                                };
+                                $statusDot = match ($status) {
+                                    'active' => 'bg-emerald-700 dark:bg-emerald-400',
+                                    'suspended' => 'bg-amber-700 dark:bg-amber-400',
+                                    'inactive' => 'bg-slate-500 dark:bg-slate-400',
+                                    default => 'bg-slate-500 dark:bg-slate-400',
+                                };
+                                $planName = $subscription?->plan?->name;
                             @endphp
                             <tr>
                                 <th scope="row" class="whitespace-nowrap px-4 py-4 font-semibold">
@@ -70,18 +86,18 @@
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-4">
                                     <a href="{{ route('subscribers.details', $subscriber) }}" class="font-semibold text-cyan-700 underline underline-offset-4 dark:text-cyan-300">{{ $subscriber->fullName() }}</a>
-                                    <span class="block text-xs text-slate-500 dark:text-slate-400">{{ $subscriber->area ?: __('Area not specified') }}</span>
+                                    <span class="block text-xs text-slate-500 dark:text-slate-400">{{ $subscriber->area !== null && $subscriber->area !== '' ? $subscriber->area : __('Area not specified') }}</span>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-4">{{ $subscription?->plan?->name ?: __('Not assigned') }}</td>
+                                <td class="whitespace-nowrap px-4 py-4">{{ $planName !== null && $planName !== '' ? $planName : __('Not assigned') }}</td>
                                 <td class="whitespace-nowrap px-4 py-4">{{ $subscription?->service_type ? str($subscription->service_type)->headline() : __('Not available') }}</td>
                                 <td class="whitespace-nowrap px-4 py-4">
-                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                                        <span aria-hidden="true" class="size-1.5 rounded-full bg-emerald-700 dark:bg-brand-green"></span>
+                                    <span @class(['inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold', $statusBadge])>
+                                        <span aria-hidden="true" @class(['size-1.5 rounded-full', $statusDot])></span>
                                         {{ $statusLabel }}
                                     </span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-4"><span aria-hidden="true">&mdash;</span><span class="sr-only">Not available</span></td>
-                                <td class="max-w-64 px-4 py-4">{{ $subscriber->remarks ?: '—' }}</td>
+                                <td class="max-w-64 px-4 py-4">{{ $subscriber->remarks !== null && $subscriber->remarks !== '' ? $subscriber->remarks : '—' }}</td>
                             </tr>
                         @empty
                             <tr>

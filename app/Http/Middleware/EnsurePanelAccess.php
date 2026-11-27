@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserType;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,8 @@ class EnsurePanelAccess
         if (! $user->hasVerifiedEmail()) {
             return redirect()->guest(route('verification.notice'));
         }
+
+        abort_unless(UserType::tryFrom((string) $user->user_type) !== null, 403);
 
         return $next($request);
     }

@@ -2,6 +2,9 @@
 
 @php
     $tabs = require resource_path('data/panel-settings-tabs.php');
+    if (auth()->user()?->user_type === \App\Enums\UserType::Admin->value) {
+        unset($tabs['integrations.scheduler'], $tabs['integrations.settings'], $tabs['router.index'], $tabs['staff.index']);
+    }
     $active = request()->routeIs('router.backups') ? 'router.index' : request()->route()?->getName();
 @endphp
 

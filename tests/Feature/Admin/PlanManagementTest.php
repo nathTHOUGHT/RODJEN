@@ -263,6 +263,29 @@ test('preview administrator can delete a plan', function () {
     $this->assertDatabaseMissing('plans', ['id' => $plan->id]);
 });
 
+test('a plan assigned to a subscriber cannot be deleted', function () {
+    $plan = Plan::query()->create(planAttributes());
+
+    $this->withSession(planPreviewSession())
+        ->post(route('subscribers.store'), [
+            'account_number' => '00005556',
+            'first_name' => 'Assigned',
+            'last_name' => 'Subscriber',
+            'billing_address' => '123 Sample Lane',
+            'plan_id' => $plan->id,
+        ])
+        ->assertSessionHasNoErrors();
+
+    $this->withSession(planPreviewSession())
+        ->from(route('products.index'))
+        ->delete(route('products.destroy', $plan))
+        ->assertRedirect(route('products.index'))
+        ->assertSessionHas('error', 'This plan is assigned to subscribers and cannot be deleted.');
+
+    $this->assertDatabaseHas('plans', ['id' => $plan->id]);
+    $this->assertDatabaseHas('subscriptions', ['plan_id' => $plan->id]);
+});
+
 test('missing plans return not found for mutations', function () {
     $this
         ->withSession(planPreviewSession())

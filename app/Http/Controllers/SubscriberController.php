@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserType;
 use App\Http\Requests\StoreSubscriberRequest;
 use App\Models\NetworkAccount;
 use App\Models\Plan;
@@ -162,7 +163,7 @@ class SubscriberController extends Controller
         return to_route('subscribers.details', $subscriber)->with('status', __('Subscriber added.'));
     }
 
-    public function show(string $subscriber): View
+    public function show(Request $request, string $subscriber): View
     {
         $subscriberId = $this->subscriberId($subscriber);
 
@@ -177,11 +178,15 @@ class SubscriberController extends Controller
             ->where('transaction_type', 'mrc')
             ->orderBy('name')
             ->get(['id', 'name', 'price', 'speed_mbps']);
+        $userType = UserType::tryFrom((string) $request->user()?->user_type);
+        $canViewNetworkSecrets = $userType?->canViewNetworkSecrets()
+            ?? ($request->session()->has('preview.user') && app()->environment(['local', 'testing']));
 
         return view('admin.subscribers.show', [
             'subscriber' => $subscriber,
-            'subscriberData' => $this->detailsFor($subscriber),
+            'subscriberData' => $this->detailsFor($subscriber, $canViewNetworkSecrets),
             'plans' => $plans,
+            'canViewNetworkSecrets' => $canViewNetworkSecrets,
         ]);
     }
 
@@ -234,6 +239,16 @@ class SubscriberController extends Controller
             $previousPlanId = (int) ($subscription->plan_id ?? 0);
             $newPlanId = (int) ($data['plan_id'] ?? 0);
 
+            if ($newPlanId > 0 && $newPlanId !== $previousPlanId) {
+                $selectedPlan = Plan::query()->lockForUpdate()->find($newPlanId);
+
+                if (! $selectedPlan || $selectedPlan->transaction_type !== 'mrc') {
+                    throw ValidationException::withMessages([
+                        'plan_id' => __('The selected plan is invalid.'),
+                    ]);
+                }
+            }
+
             $subscription->update([
                 'plan_id' => $data['plan_id'] ?? null,
                 'installation_date' => $data['installation_date'] ?? null,
@@ -267,16 +282,24 @@ class SubscriberController extends Controller
             ->with('subscription.networkAccount')
             ->findOrFail($this->subscriberId($subscriber));
         $networkAccount = $subscriber->subscription?->networkAccount;
-        $data = $request->validate([
+        $userType = UserType::tryFrom((string) $request->user()?->user_type);
+        $canManageNetworkSecrets = $userType?->canViewNetworkSecrets()
+            ?? ($request->session()->has('preview.user') && app()->environment(['local', 'testing']));
+        $rules = [
             'username' => [
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('network_accounts', 'username')->ignore($networkAccount?->id ?? 0),
+                Rule::unique('network_accounts', 'username')->ignore($networkAccount->id ?? 0),
             ],
-            'password' => ['nullable', 'string', 'max:255'],
             'profile' => ['nullable', 'string', 'max:255'],
-        ]);
+        ];
+
+        if ($canManageNetworkSecrets) {
+            $rules['password'] = ['nullable', 'string', 'max:255'];
+        }
+
+        $data = $request->validate($rules);
 
         $networkAccount = $networkAccount ?? $subscriber->subscription()->firstOrFail()->networkAccount()->make();
         $networkAccount->fill([
@@ -303,7 +326,7 @@ class SubscriberController extends Controller
 
         $subscriber->comments()->create([
             'user_id' => $user?->id,
-            'commenter_name' => $user?->name ?? $request->session()->get('preview.user.name', 'Admin'),
+            'commenter_name' => $user->name ?? $request->session()->get('preview.user.name', 'Admin'),
             'comment' => $data['comment'],
         ]);
 
@@ -311,7 +334,7 @@ class SubscriberController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function detailsFor(Subscriber $subscriber): array
+    private function detailsFor(Subscriber $subscriber, bool $canViewNetworkSecrets): array
     {
         $subscription = $subscriber->subscription;
         $networkAccount = $subscription?->networkAccount;
@@ -344,7 +367,9 @@ class SubscriberController extends Controller
             ],
             'mikrotik' => [
                 'Name' => $networkAccount?->username,
-                'Password' => $networkAccount?->password,
+                'Password' => $networkAccount?->getRawOriginal('password') === null
+                    ? null
+                    : ($canViewNetworkSecrets ? $networkAccount->password : 'Hidden for your role'),
                 'Profile' => $networkAccount?->profile,
                 'Comment' => $networkAccount?->comment,
             ],
@@ -364,7 +389,7 @@ class SubscriberController extends Controller
                 'Network remarks' => $networkAccount?->remarks,
                 'Current balance' => null,
             ],
-            'status' => $subscription?->status ?? 'active',
+            'status' => $subscription->status ?? 'active',
         ];
     }
 

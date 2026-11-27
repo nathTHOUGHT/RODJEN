@@ -154,10 +154,14 @@
             </label>
             <label class="{{ $labelClasses }}">
                 Password
-                <input name="password" type="text" maxlength="255" autocomplete="new-password" value="{{ old('password', $networkAccount?->password) }}" class="{{ $fieldClasses }}">
-                @error('password')
-                    <span role="alert" class="text-sm font-normal text-red-600">{{ $message }}</span>
-                @enderror
+                @if ($canViewNetworkSecrets)
+                    <input name="password" type="text" maxlength="255" autocomplete="new-password" value="{{ old('password', $networkAccount?->password) }}" class="{{ $fieldClasses }}">
+                    @error('password')
+                        <span role="alert" class="text-sm font-normal text-red-600">{{ $message }}</span>
+                    @enderror
+                @else
+                    <p class="{{ $fieldClasses }} text-slate-600 dark:text-slate-300">Hidden for your role</p>
+                @endif
             </label>
             <label class="{{ $labelClasses }}">
                 Profile

@@ -314,7 +314,6 @@ test('subscriber records list persisted accounts and apply area status and searc
         'pppoe_username' => 'south@rodjen',
     ]))->assertSessionHasNoErrors();
 
-    $this->assertDatabaseHas('subscribers', ['area' => '0', 'remarks' => '0']);
     $this->assertDatabaseHas('subscriptions', ['plan_id' => $plan->id]);
 
     $this->get('/subscriptions/records')
@@ -365,11 +364,13 @@ test('subscriber records preserve valid zero-like text values', function () {
         'pppoe_username' => 'zero-values@rodjen',
     ]))->assertSessionHasNoErrors();
 
+    $this->assertDatabaseHas('subscribers', ['account_number' => '00000055', 'area' => '0', 'remarks' => '0']);
+
     $this->get('/subscriptions/records')
         ->assertOk()
         ->assertDontSee('Area not specified')
         ->assertDontSee('Not assigned')
-        ->assertSee('>0</span>', false)
+        ->assertSee('<span class="block text-xs text-slate-500 dark:text-slate-400">0</span>', false)
         ->assertSee('>0</td>', false);
 });
 

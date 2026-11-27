@@ -17,6 +17,11 @@
                 {{ session('status') }}
             </p>
         @endif
+        @if (session('error'))
+            <p role="alert" class="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+                {{ session('error') }}
+            </p>
+        @endif
 
         <x-admin.panel title="Plan catalogue">
             <x-slot:actions>

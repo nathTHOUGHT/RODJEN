@@ -32,7 +32,7 @@ test('add subscriber renders a database-backed form with monthly plans', functio
 
     $response
         ->assertOk()
-        ->assertSeeInOrder(['Personal Details', 'Subscription Details', 'MikroTik Details'])
+        ->assertSeeInOrder(['Personal Details', 'Subscription Configuration', 'MikroTik Configuration'])
         ->assertSee('Additional details')
         ->assertSee('Account number')
         ->assertSee('First name')

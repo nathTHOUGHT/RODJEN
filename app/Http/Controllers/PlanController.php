@@ -71,7 +71,8 @@ class PlanController extends Controller
         DB::transaction(function () use ($plan, $validatedPlan, &$duplicateName): void {
             $lockedPlan = Plan::query()
                 ->lockForUpdate()
-                ->findOrFail($plan->getKey());
+                ->whereKey($plan->getKey())
+                ->firstOrFail();
 
             if ($validatedPlan['transaction_type'] !== 'mrc' && $lockedPlan->subscriptions()->exists()) {
                 throw ValidationException::withMessages([
@@ -95,7 +96,24 @@ class PlanController extends Controller
 
     public function destroy(Plan $plan): RedirectResponse
     {
-        $plan->delete();
+        $deleted = DB::transaction(function () use ($plan): bool {
+            $lockedPlan = Plan::query()
+                ->lockForUpdate()
+                ->whereKey($plan->getKey())
+                ->firstOrFail();
+
+            if ($lockedPlan->subscriptions()->exists()) {
+                return false;
+            }
+
+            $lockedPlan->delete();
+
+            return true;
+        }, 3);
+
+        if (! $deleted) {
+            return to_route('products.index')->with('error', __('This plan is assigned to subscribers and cannot be deleted.'));
+        }
 
         return to_route('products.index')->with('status', __('Plan deleted.'));
     }

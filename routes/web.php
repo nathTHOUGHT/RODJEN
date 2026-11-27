@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\PreviewSessionController;
 use App\Http\Controllers\HomeCalendarController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\StaffUserController;
 use App\Http\Controllers\SubscriberController;
 use Illuminate\Support\Facades\Route;
 
@@ -57,16 +58,27 @@ Route::middleware('panel.access')->group(function () {
     });
 
     Route::prefix('integrations')->group(function () {
-        Route::view('messaging', 'admin.integrations.messaging')->name('integrations.messaging');
-        Route::view('scheduler', 'admin.integrations.scheduler')->name('integrations.scheduler');
-        Route::view('settings', 'admin.integrations.settings')->name('integrations.settings');
+        Route::middleware('panel.role:developer,superadmin')->group(function () {
+            Route::view('messaging', 'admin.integrations.messaging')->name('integrations.messaging');
+            Route::view('scheduler', 'admin.integrations.scheduler')->name('integrations.scheduler');
+            Route::view('settings', 'admin.integrations.settings')->name('integrations.settings');
+        });
     });
 
     Route::prefix('panel-settings')->group(function () {
         Route::get('/', fn () => to_route('products.index'))->name('panel.settings');
-        Route::view('router', 'admin.settings.router.index')->name('router.index');
-        Route::view('router/backups', 'admin.settings.router.backups')->name('router.backups');
-        Route::view('staff', 'admin.settings.users.index')->name('staff.index');
+        Route::middleware('panel.role:developer,superadmin')->group(function () {
+            Route::view('router', 'admin.settings.router.index')->name('router.index');
+            Route::view('router/backups', 'admin.settings.router.backups')->name('router.backups');
+            Route::get('staff', [StaffUserController::class, 'index'])->name('staff.index');
+            Route::post('staff', [StaffUserController::class, 'store'])->name('staff.store');
+            Route::patch('staff/{user}', [StaffUserController::class, 'update'])
+                ->whereNumber('user')
+                ->name('staff.update');
+            Route::delete('staff/{user}', [StaffUserController::class, 'destroy'])
+                ->whereNumber('user')
+                ->name('staff.destroy');
+        });
     });
 
     Route::prefix('logs')->group(function () {

@@ -32,7 +32,6 @@ test('the sidebar lists the requested destinations and settings opens from the p
         [route('reports.index'), 'Reports'],
         [route('subscribers.index'), 'Records'],
         [route('subscribers.create'), '+'],
-        [route('integrations.messaging'), 'Chats'],
         [route('job-orders.index'), 'Job Order'],
         [route('inventory.index'), 'Inventory'],
         [route('logs.index'), 'Logs'],
@@ -45,7 +44,7 @@ test('the sidebar lists the requested destinations and settings opens from the p
 });
 
 test('the settings tabs link to each existing page and highlight the current section', function (string $activeRoute) {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->create(['user_type' => 'superadmin']));
 
     $page = $this->get(route($activeRoute))->assertOk();
     $document = panelNavigationXPath($page->getContent());

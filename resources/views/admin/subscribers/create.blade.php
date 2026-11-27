@@ -111,6 +111,12 @@
                     </div>
                 </x-admin.panel>
 
+                <x-admin.panel title="Additional details">
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        @include('admin.subscribers.fields', ['fields' => $additionalFields])
+                    </div>
+                </x-admin.panel>
+
                 <div class="flex flex-wrap justify-center gap-3">
                     <a href="{{ route('subscribers.index') }}"
                         class="min-w-28 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">Cancel</a>

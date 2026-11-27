@@ -26,6 +26,8 @@ dataset('admin page routes', [
 ]);
 
 test('guests cannot access admin pages', function (string $route) {
+    config()->set('preview.enabled', true);
+
     $this->get(route($route))->assertRedirect(route('login'));
 })->with('admin page routes');
 
@@ -54,13 +56,44 @@ test('unverified authenticated users cannot access admin pages', function (strin
         ->assertRedirect(route('verification.notice'));
 })->with('admin page routes');
 
-test('verified authenticated users can access admin pages', function (string $route, string $heading) {
+test('verified admin users only access routes allowed to their role', function (string $route, string $heading) {
     $user = User::factory()->create();
+    $restrictedRoutes = [
+        'router.index',
+        'router.backups',
+        'staff.index',
+        'integrations.messaging',
+        'integrations.scheduler',
+        'integrations.settings',
+    ];
 
-    $this
-        ->actingAs($user)
-        ->followingRedirects()
+    $response = $this->actingAs($user)->followingRedirects()->get(route($route));
+
+    if (in_array($route, $restrictedRoutes, true)) {
+        $response->assertForbidden();
+
+        return;
+    }
+
+    $response->assertOk()->assertSee($heading);
+})->with('admin page routes');
+
+test('superadmins can access staff and privileged settings', function (string $route, string $heading) {
+    $user = User::factory()->create(['user_type' => 'superadmin']);
+
+    $this->actingAs($user)
         ->get(route($route))
         ->assertOk()
         ->assertSee($heading);
-})->with('admin page routes');
+})->with([
+    'router settings' => ['router.index', 'Router settings'],
+    'router backups' => ['router.backups', 'Router backups'],
+    'staff users' => ['staff.index', 'Staff users'],
+    'messaging' => ['integrations.messaging', 'Messaging'],
+    'scheduler' => ['integrations.scheduler', 'Scheduler'],
+    'integration settings' => ['integrations.settings', 'Integration settings'],
+]);
+
+test('public registration is disabled', function () {
+    $this->get('/register')->assertNotFound();
+});

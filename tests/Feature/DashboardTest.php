@@ -63,7 +63,7 @@ test('preview session can visit the text-only admin shell', function () {
 
     $response
         ->assertOk()
-        ->assertSee('Administration Panel')
+        ->assertSee('RODJEN Technet')
         ->assertSee('Dashboard')
         ->assertSee('data-test="logout-button"', false)
         ->assertDontSee('<img', false)

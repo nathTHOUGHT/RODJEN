@@ -51,6 +51,7 @@ class Plan extends Model
         return self::TRANSACTION_TYPES[$this->transaction_type] ?? $this->transaction_type;
     }
 
+    /** @return HasMany<Subscription, $this> */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);

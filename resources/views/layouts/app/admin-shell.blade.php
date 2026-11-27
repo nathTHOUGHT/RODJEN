@@ -26,6 +26,10 @@
         ],
         'Logs' => [['label' => 'Logs', 'route' => 'logs.index', 'icon' => 'scroll-text']],
     ];
+    $canManagePrivilegedSettings = $authenticatedUser?->user_type !== \App\Enums\UserType::Admin->value;
+    if (! $canManagePrivilegedSettings) {
+        unset($navigationGroups['Communication']);
+    }
 
     $homeUrl = route('panel.home');
     $navigationUrls = [];
@@ -44,6 +48,9 @@
     }
 
     $settingsTabs = require resource_path('data/panel-settings-tabs.php');
+    if (! $canManagePrivilegedSettings) {
+        unset($settingsTabs['integrations.scheduler'], $settingsTabs['integrations.settings'], $settingsTabs['router.index'], $settingsTabs['staff.index']);
+    }
     foreach ($settingsTabs + ['router.backups' => 'Router backups'] as $routeName => $label) {
         $searchPages[] = ['label' => $label, 'group' => 'Settings', 'url' => route($routeName)];
     }

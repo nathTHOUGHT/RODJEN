@@ -64,8 +64,10 @@ test('the calendar displays daily weekly and monthly repeats on their scheduled 
         '2026-05-31' => ['Daily checks', 'Weekly checks', 'Monthly checks'],
         '2026-06-01' => ['Daily checks'],
         '2026-06-07' => ['Daily checks', 'Weekly checks'],
-        '2026-06-30' => ['Daily checks'],
+        '2026-06-30' => ['Daily checks', 'Monthly checks'],
         '2026-07-31' => ['Daily checks', 'Monthly checks'],
+        '2027-02-28' => ['Daily checks', 'Weekly checks', 'Monthly checks'],
+        '2028-02-29' => ['Daily checks', 'Monthly checks'],
     ] as $date => $expectedTitles) {
         $response = $this->get(route('panel.home', ['view' => 'day', 'date' => $date]))->assertOk();
 
