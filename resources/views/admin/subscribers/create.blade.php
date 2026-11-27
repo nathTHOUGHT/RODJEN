@@ -1,19 +1,19 @@
 <x-layouts::app :title="__('Add subscriber')">
     @php
-        $personalRows = [
+        $personalDetails = [
             [
                 ['account_number', 'account-number', 'Account number', 'text'],
-                ['first_name', 'first-name', 'First name', 'text'],
-                ['last_name', 'last-name', 'Last name', 'text'],
+                ['first_name', 'first-name', 'First name', 'text', 'uppercase'],
+                ['last_name', 'last-name', 'Last name', 'text', 'uppercase'],
             ],
-            [['landmark', 'landmark', 'Landmark', 'text']],
-            [['billing_address', 'billing-address', 'Billing address', 'text']],
+            [['landmark', 'landmark', 'Landmark', 'text', 'uppercase']],
+            [['billing_address', 'billing-address', 'Billing address', 'text', 'uppercase']],
             [
                 ['contact_number', 'contact-number', 'Contact number', 'tel'],
                 ['email', 'email-address', 'Email address', 'email'],
             ],
             [['coordinates', 'coordinates', 'Coordinates', 'text']],
-            [['remarks', 'remarks', 'Remarks', 'text']],
+            [['remarks', 'remarks', 'Remarks', 'text', 'uppercase']],
         ];
         $subscriptionFields = [
             ['installation_date', 'installation-date', 'Installation date', 'date'],
@@ -23,7 +23,7 @@
             ['pppoe_username', 'pppoe-name', 'PPPoE name', 'text'],
             ['pppoe_password', 'pppoe-password', 'PPPoE password', 'password'],
             ['pppoe_profile', 'pppoe-profile', 'PPPoE profile', 'text'],
-            ['pppoe_comment', 'pppoe-comment', 'PPPoE comment', 'text'],
+            ['pppoe_comment', 'pppoe-comment', 'PPPoE comment', 'text', null, 'readonly'],
         ];
         $additionalFields = [
             ['area', 'area', 'Area', 'text'],
@@ -56,9 +56,13 @@
 
         <div class="grid gap-4 xl:grid-cols-2">
             <x-admin.panel title="Personal Details">
-                <div class="space-y-3">
-                    @foreach ($personalRows as $fields)
-                        <div @class(['grid gap-3', 'sm:grid-cols-2' => count($fields) === 2, 'sm:grid-cols-3' => count($fields) === 3])>
+                <div class="space-y-2">
+                    @foreach ($personalDetails as $fields)
+                        <div @class([
+                            'grid gap-3',
+                            'sm:grid-cols-2' => count($fields) === 2,
+                            'sm:grid-cols-3' => count($fields) === 3,
+                        ])>
                             @include('admin.subscribers.fields')
                         </div>
                     @endforeach
@@ -66,23 +70,23 @@
             </x-admin.panel>
 
             <div class="min-w-0 space-y-4">
-                <x-admin.panel title="Subscription Details">
+                <x-admin.panel title="Subscription Configuration">
                     <div class="grid gap-3">
                         @php
                             $oldPlanId = old('plan_id');
                         @endphp
-                        <label for="plan" class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label for="plan"
+                            class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Plan
-                            <select
-                                id="plan"
-                                name="plan_id"
+                            <select id="plan" name="plan_id"
                                 @if ($errors->has('plan_id')) aria-invalid="true" aria-describedby="plan-error" @endif
-                                class="w-full min-w-0 rounded-full border bg-white px-3 py-2 font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('plan_id') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}"
-                            >
+                                class="w-full min-w-0 rounded-full border bg-white px-3 py-2 font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('plan_id') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}">
                                 <option value="">No plan assigned</option>
                                 @foreach ($plans as $plan)
                                     <option value="{{ $plan->id }}" @selected(is_scalar($oldPlanId) && (string) $oldPlanId === (string) $plan->id)>
-                                        {{ $plan->name }} — {{ $plan->speed_mbps ? number_format($plan->speed_mbps).' Mbps · ' : '' }}PHP {{ number_format((float) $plan->price, 2) }}
+                                        {{ $plan->name }} —
+                                        {{ $plan->speed_mbps ? number_format($plan->speed_mbps) . ' Mbps · ' : '' }}PHP
+                                        {{ number_format((float) $plan->price, 2) }}
                                     </option>
                                 @endforeach
                             </select>
@@ -94,24 +98,28 @@
                     </div>
                 </x-admin.panel>
 
-                <x-admin.panel title="MikroTik Details">
-                    <div class="grid gap-3">
+                <x-admin.panel title="MikroTik Configuration">
+                    <div>
                         @include('admin.subscribers.fields', ['fields' => $mikrotikFields])
                     </div>
                 </x-admin.panel>
 
                 <div class="flex flex-wrap justify-center gap-3">
-                    <a href="{{ route('subscribers.index') }}" class="min-w-28 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">Cancel</a>
-                    <button type="submit" class="min-w-28 rounded-lg bg-cyan-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">Submit</button>
+                    <a href="{{ route('subscribers.index') }}"
+                        class="min-w-28 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">Cancel</a>
+                    <button type="submit"
+                        class="min-w-28 rounded-lg bg-cyan-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">Submit</button>
                 </div>
             </div>
         </div>
 
+        {{-- Additional details section is currently commented out. Uncomment the following block to enable it.
         <details class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
             <summary class="cursor-pointer rounded-xl px-5 py-3 text-sm font-semibold text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cyan-600 dark:text-white">Additional details</summary>
             <div class="grid gap-3 px-5 pb-5 sm:grid-cols-2 xl:grid-cols-3">
                 @include('admin.subscribers.fields', ['fields' => $additionalFields])
             </div>
         </details>
+         --}}
     </form>
 </x-layouts::app>
