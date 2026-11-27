@@ -1,5 +1,7 @@
 <?php
 
+use Database\Seeders\PlanSeeder;
+
 beforeEach(function () {
     config()->set('preview.enabled', true);
 
@@ -97,20 +99,38 @@ test('subscriber records links a demo account to its populated details', functio
         ->assertSee('demo-alex');
 });
 
-test('products and services renders an empty table shell', function () {
+test('products and services renders plan cards and an accessible add dialog', function () {
+    $this->seed(PlanSeeder::class);
+
     $response = $this->get(route('products.index'));
 
     $response
         ->assertOk()
         ->assertSee('Search')
+        ->assertSee('ADVOCACY PLAN 649/45MBPS')
+        ->assertSee('pppoe-45mbit/649')
+        ->assertSee('Monthly Recurring Charge (MRC)')
+        ->assertSee('45 Mbps')
+        ->assertSee('₱649.00')
+        ->assertSee('106 users')
+        ->assertSee('data-test="plan-card"', false)
+        ->assertSee('id="create-plan-dialog"', false)
+        ->assertSee('aria-labelledby="create-plan-title"', false)
+        ->assertSee('aria-haspopup="dialog"', false)
+        ->assertSee('id="create-plan-speed"', false)
+        ->assertSeeInOrder(['Speed (Mbps)', 'Price'])
+        ->assertSeeInOrder(['45 Mbps', '649.00'])
+        ->assertSee('href="'.route('products.index', ['edit' => 1]).'"', false)
+        ->assertSee('action="'.route('products.destroy', 1).'"', false)
         ->assertSeeInOrder([
-            'Product',
-            'Profile group',
-            'Transaction type',
-            'Price',
-            'Usage or account count',
+            'Monthly Recurring Charge (MRC)',
+            'One Time Charge (OTC)',
+            'Policy & Condition Fee (PCF)',
+            'Monthly Recurring Discount (MRD)',
+            'Monthly Due Surcharge (MDS)',
         ])
-        ->assertSee('No products or services yet');
+        ->assertDontSee('<table', false)
+        ->assertDontSee('No products or services yet');
 });
 
 test('policies and conditions renders an empty table shell', function () {

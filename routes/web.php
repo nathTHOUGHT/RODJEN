@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\PreviewSessionController;
 use App\Http\Controllers\HomeCalendarController;
+use App\Http\Controllers\PlanController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -27,7 +28,10 @@ Route::middleware('panel.access')->group(function () {
         Route::view('add', 'admin.subscribers.create')->name('subscribers.create');
         Route::view('records', 'admin.subscribers.index', $subscriberPreview)->name('subscribers.index');
         Route::view('records/details', 'admin.subscribers.show', $subscriberPreview)->name('subscribers.details');
-        Route::view('products', 'admin.products.index')->name('products.index');
+        Route::get('products', [PlanController::class, 'index'])->name('products.index');
+        Route::post('products', [PlanController::class, 'store'])->name('products.store');
+        Route::patch('products/{plan}', [PlanController::class, 'update'])->name('products.update');
+        Route::delete('products/{plan}', [PlanController::class, 'destroy'])->name('products.destroy');
         Route::view('policies', 'admin.policies.index')->name('policies.index');
     });
 
