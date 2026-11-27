@@ -24,6 +24,7 @@ Route::middleware('panel.access')->group(function () {
 
     Route::prefix('subscriptions')->group(function () {
         Route::get('add', [SubscriberController::class, 'create'])->name('subscribers.create');
+        Route::get('account-number', [SubscriberController::class, 'generateAccountNumber'])->name('subscribers.account-number');
         Route::post('records', [SubscriberController::class, 'store'])->name('subscribers.store');
         Route::get('records', [SubscriberController::class, 'index'])->name('subscribers.index');
         Route::get('records/{subscriber}', [SubscriberController::class, 'show'])

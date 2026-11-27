@@ -76,6 +76,27 @@ test('add subscriber renders a database-backed form with monthly plans', functio
         ->assertDontSee('data-test="subscriber-create-disabled"', false);
 });
 
+test('account number form input is limited to eight digits and has a generator', function () {
+    $this->get(route('subscribers.create'))
+        ->assertOk()
+        ->assertSee('name="account_number"', false)
+        ->assertSee('maxlength="8"', false)
+        ->assertSee('pattern="[0-9]{8}"', false)
+        ->assertSee('data-account-number-generate', false)
+        ->assertSee('aria-label="Generate account number"', false)
+        ->assertSee('aria-label="Account number"', false)
+        ->assertSee('aria-label="First name"', false)
+        ->assertSee('aria-label="Plan"', false)
+        ->assertSee('<path d="M12 5v14M5 12h14" />', false)
+        ->assertSee('placeholder="Account No."', false)
+        ->assertSee('placeholder="Mobile No."', false)
+        ->assertSee('placeholder="Enter first name"', false)
+        ->assertSee('placeholder="Enter email address"', false)
+        ->assertSeeInOrder(['name="installation_date"', 'name="plan_id"', 'name="billing_day"'], false)
+        ->assertDontSee('<label for="account-number"', false)
+        ->assertDontSee('<label for="plan"', false);
+});
+
 test('add subscriber displays validation errors and never flashes the pppoe password', function () {
     $response = $this
         ->followingRedirects()

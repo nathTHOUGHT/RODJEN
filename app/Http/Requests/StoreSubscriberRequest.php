@@ -17,7 +17,7 @@ class StoreSubscriberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'account_number' => ['required', 'string', 'max:50', Rule::unique('subscribers', 'account_number')],
+            'account_number' => ['required', 'string', 'regex:/\A[0-9]{8}\z/', Rule::unique('subscribers', 'account_number')],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'landmark' => ['nullable', 'string', 'max:255'],

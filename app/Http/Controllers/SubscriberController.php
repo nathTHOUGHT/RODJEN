@@ -8,6 +8,7 @@ use App\Models\Plan;
 use App\Models\Subscriber;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -57,6 +58,21 @@ class SubscriberController extends Controller
             ->get(['id', 'name', 'price', 'speed_mbps']);
 
         return view('admin.subscribers.create', compact('plans'));
+    }
+
+    public function generateAccountNumber(): JsonResponse
+    {
+        for ($attempt = 0; $attempt < 100; $attempt++) {
+            $accountNumber = str_pad((string) random_int(0, 99_999_999), 8, '0', STR_PAD_LEFT);
+
+            if (! Subscriber::query()->where('account_number', $accountNumber)->exists()) {
+                return response()->json(['account_number' => $accountNumber]);
+            }
+        }
+
+        return response()->json([
+            'message' => __('Could not generate an available account number. Please try again.'),
+        ], 503);
     }
 
     public function store(StoreSubscriberRequest $request): RedirectResponse

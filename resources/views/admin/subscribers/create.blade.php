@@ -15,8 +15,10 @@
             [['coordinates', 'coordinates', 'Coordinates', 'text']],
             [['remarks', 'remarks', 'Remarks', 'text', 'uppercase']],
         ];
-        $subscriptionFields = [
+        $installationFields = [
             ['installation_date', 'installation-date', 'Installation date', 'date'],
+        ];
+        $subscriptionFields = [
             ['billing_day', 'bill-generation', 'Bill generation day (1–31)', 'number'],
         ];
         $mikrotikFields = [
@@ -54,14 +56,15 @@
             </div>
         @endif
 
-        <div class="grid gap-4 xl:grid-cols-2">
+        <div class="grid h-fit gap-4 xl:grid-cols-2">
+            <!-- Personal Details -->
             <x-admin.panel title="Personal Details">
-                <div class="space-y-2">
+                <div class="space-y-3">
                     @foreach ($personalDetails as $fields)
                         <div @class([
                             'grid gap-3',
-                            'sm:grid-cols-2' => count($fields) === 2,
-                            'sm:grid-cols-3' => count($fields) === 3,
+                            'sm:grid-cols-2' => count($fields) > 1,
+                            'xl:grid-cols-3' => count($fields) === 3,
                         ])>
                             @include('admin.subscribers.fields')
                         </div>
@@ -69,37 +72,41 @@
                 </div>
             </x-admin.panel>
 
+            <!-- Subscription Configuration -->
             <div class="min-w-0 space-y-4">
                 <x-admin.panel title="Subscription Configuration">
                     <div class="grid gap-3">
                         @php
                             $oldPlanId = old('plan_id');
                         @endphp
-                        <label for="plan"
-                            class="grid min-w-0 gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Plan
-                            <select id="plan" name="plan_id"
-                                @if ($errors->has('plan_id')) aria-invalid="true" aria-describedby="plan-error" @endif
-                                class="w-full min-w-0 rounded-full border bg-white px-3 py-2 font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('plan_id') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}">
-                                <option value="">No plan assigned</option>
-                                @foreach ($plans as $plan)
-                                    <option value="{{ $plan->id }}" @selected(is_scalar($oldPlanId) && (string) $oldPlanId === (string) $plan->id)>
-                                        {{ $plan->name }} —
-                                        {{ $plan->speed_mbps ? number_format($plan->speed_mbps) . ' Mbps · ' : '' }}PHP
-                                        {{ number_format((float) $plan->price, 2) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('plan_id')
-                                <span id="plan-error" class="text-sm text-red-600">{{ $message }}</span>
-                            @enderror
-                        </label>
+                        <div class="grid gap-3 sm:grid-cols-2 sm:items-start">
+                            @include('admin.subscribers.fields', ['fields' => $installationFields])
+                            <div class="grid min-w-0 gap-1.5">
+                                <select id="plan" name="plan_id"
+                                    aria-label="Plan"
+                                    @if ($errors->has('plan_id')) aria-invalid="true" aria-describedby="plan-error" @endif
+                                    class="h-11 w-full min-w-0 rounded-full border bg-white px-4 text-sm font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('plan_id') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}">
+                                    <option value="">No plan assigned</option>
+                                    @foreach ($plans as $plan)
+                                        <option value="{{ $plan->id }}" @selected(is_scalar($oldPlanId) && (string) $oldPlanId === (string) $plan->id)>
+                                            {{ $plan->name }} —
+                                            {{ $plan->speed_mbps ? number_format($plan->speed_mbps) . ' Mbps · ' : '' }}PHP
+                                            {{ number_format((float) $plan->price, 2) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('plan_id')
+                                    <span id="plan-error" class="text-sm text-red-600">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
                         @include('admin.subscribers.fields', ['fields' => $subscriptionFields])
                     </div>
                 </x-admin.panel>
 
+                <!-- MikroTik Configuration -->
                 <x-admin.panel title="MikroTik Configuration">
-                    <div>
+                    <div class="grid gap-3">
                         @include('admin.subscribers.fields', ['fields' => $mikrotikFields])
                     </div>
                 </x-admin.panel>
@@ -112,6 +119,41 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            document.addEventListener('click', async function(event) {
+                const button = event.target.closest('[data-account-number-generate]');
+                if (!button) return;
+
+                const form = button.closest('form');
+                const input = form?.querySelector('[data-account-number-input]');
+                const message = form?.querySelector('[data-account-number-message]');
+                if (!input || !message) return;
+
+                button.disabled = true;
+                message.textContent = '';
+
+                try {
+                    const response = await fetch(@json(route('subscribers.account-number')), {
+                        headers: { Accept: 'application/json' },
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Could not generate an account number.');
+                    }
+
+                    input.value = result.account_number;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                } catch (error) {
+                    message.textContent = error instanceof Error
+                        ? error.message
+                        : 'Could not generate an account number. Please try again.';
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        </script>
 
         {{-- Additional details section is currently commented out. Uncomment the following block to enable it.
         <details class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">

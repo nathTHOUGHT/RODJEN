@@ -117,6 +117,37 @@ test('subscriber creation accepts the required fields without optional service d
     $this->assertDatabaseHas('network_accounts', ['subscription_id' => 1, 'username' => null]);
 });
 
+test('subscriber account numbers require exactly eight digits', function () {
+    foreach (['1234567', '123456789', '1234ABCD', '１２３４５６７８'] as $accountNumber) {
+        $this->from('/subscriptions/add')
+            ->post('/subscriptions/records', subscriberPayload([
+                'account_number' => $accountNumber,
+            ]))
+            ->assertRedirect('/subscriptions/add')
+            ->assertSessionHasErrors(['account_number']);
+    }
+
+    $this->assertDatabaseCount('subscribers', 0);
+});
+
+test('subscriber account number generator returns an unused eight digit number', function () {
+    $this->post('/subscriptions/records', subscriberPayload([
+        'account_number' => '17465997',
+        'pppoe_username' => 'existing@rodjen',
+    ]))->assertSessionHasNoErrors();
+
+    $response = $this->getJson(route('subscribers.account-number'))
+        ->assertOk()
+        ->assertJsonStructure(['account_number']);
+
+    $accountNumber = $response->json('account_number');
+
+    expect($accountNumber)->toMatch('/\A[0-9]{8}\z/')
+        ->not->toBe('17465997');
+
+    $this->assertDatabaseMissing('subscribers', ['account_number' => $accountNumber]);
+});
+
 test('subscriber identifiers must be unique without creating partial records', function () {
     $plan = monthlyPlan();
 
