@@ -9,7 +9,7 @@
     $addClasses = 'rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 hover:border-cyan-600 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:hover:border-cyan-400';
 @endphp
 
-<x-layouts::app.sidebar :title="__('Home')">
+<x-layouts::app.admin-shell :title="__('Home')">
     <div x-data class="flex min-h-full flex-col" @if ($errors->any()) x-init="$nextTick(() => $refs.noteDialog.showModal())" @endif>
         @if (session('status'))
             <p role="status" class="mb-4 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-medium text-cyan-900 dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200">
@@ -119,14 +119,14 @@
                                 Reminders <time datetime="{{ $selectedDateKey }}" class="ml-1 font-normal text-slate-600 dark:text-slate-400">{{ $selectedDate->format('M j, Y') }}</time>
                             </summary>
                             <div class="space-y-3 px-3 pb-3">
-                                @include('home-calendar-reminders')
+                                @include('home.partials.reminders')
                                 <button type="button" x-on:click="$refs.noteDialog.showModal()" class="text-sm font-semibold text-cyan-800 hover:underline dark:text-cyan-300">Add to this day</button>
                             </div>
                         </details>
                     @else
                         <div id="reminders" class="min-h-32 space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-800">
                             <h3 class="text-sm font-semibold">Reminders</h3>
-                            @include('home-calendar-reminders')
+                            @include('home.partials.reminders')
                         </div>
                     @endif
                     </div>
@@ -210,4 +210,4 @@
                 </form>
             </dialog>
         </div>
-</x-layouts::app.sidebar>
+</x-layouts::app.admin-shell>

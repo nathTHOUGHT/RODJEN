@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\PreviewSessionController;
 use App\Http\Controllers\HomeCalendarController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\SubscriberController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -22,12 +23,12 @@ Route::middleware('panel.access')->group(function () {
     Route::view('inventory', 'admin.inventory.index')->name('inventory.index');
 
     Route::prefix('subscriptions')->group(function () {
-        $sampleSubscriber = require resource_path('data/sample-subscriber.php');
-        $subscriberPreview = ['sampleSubscriber' => $sampleSubscriber];
-
-        Route::view('add', 'admin.subscribers.create')->name('subscribers.create');
-        Route::view('records', 'admin.subscribers.index', $subscriberPreview)->name('subscribers.index');
-        Route::view('records/details', 'admin.subscribers.show', $subscriberPreview)->name('subscribers.details');
+        Route::get('add', [SubscriberController::class, 'create'])->name('subscribers.create');
+        Route::post('records', [SubscriberController::class, 'store'])->name('subscribers.store');
+        Route::get('records', [SubscriberController::class, 'index'])->name('subscribers.index');
+        Route::get('records/{subscriber}', [SubscriberController::class, 'show'])
+            ->whereNumber('subscriber')
+            ->name('subscribers.details');
         Route::get('products', [PlanController::class, 'index'])->name('products.index');
         Route::post('products', [PlanController::class, 'store'])->name('products.store');
         Route::patch('products/{plan}', [PlanController::class, 'update'])->name('products.update');

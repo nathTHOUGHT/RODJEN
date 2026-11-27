@@ -1,3 +1,4 @@
+{{-- Reminder list shared by the desktop and mobile home-calendar views. --}}
 @if ($selectedNotes->isEmpty())
     <p class="text-sm text-slate-600 dark:text-slate-400">No reminders for this day.</p>
 @else

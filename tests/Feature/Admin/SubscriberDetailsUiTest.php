@@ -1,19 +1,33 @@
 <?php
 
+use App\Models\Subscriber;
 use Illuminate\Testing\TestResponse;
 
 function subscriberDetailsResponse(object $testCase): TestResponse
 {
     config()->set('preview.enabled', true);
 
-    return $testCase
+    $testCase
         ->withSession([
             'preview.user' => [
                 'username' => 'admin',
                 'name' => 'Admin',
             ],
         ])
-        ->get(route('subscribers.details'));
+        ->post(route('subscribers.store'), [
+            'account_number' => '00001234',
+            'first_name' => 'Alex',
+            'last_name' => 'Santos',
+            'billing_address' => '123 Sample Lane',
+            'pppoe_username' => 'alex@rodjen',
+            'pppoe_password' => 'never-render-this-secret',
+            'caller_id' => 'CALLER-00001234',
+        ])
+        ->assertSessionHasNoErrors();
+
+    $subscriber = Subscriber::query()->firstOrFail();
+
+    return $testCase->get(route('subscribers.details', $subscriber));
 }
 
 function expectDisabledSubscriberAction(string $html, string $testMarker): void
@@ -47,10 +61,15 @@ test('subscriber details presents the toolbar and information panels in layout o
             'Transaction list',
         ])
         ->assertSee('Additional details')
-        ->assertSee('Coverage map')
-        ->assertSee('Customer location')
-        ->assertSee('Network path')
-        ->assertSee('PON details')
+        ->assertSee('External URL')
+        ->assertSee('Image URL')
+        ->assertSee('OLT device')
+        ->assertSee('PON port')
+        ->assertSee('NAP device')
+        ->assertSee('NAP port')
+        ->assertSee('ONU name')
+        ->assertSee('MAC address')
+        ->assertSee('Network remarks')
         ->assertSee('Transaction summary')
         ->assertSee('System logs')
         ->assertSee('Activity logs')
@@ -113,11 +132,17 @@ test('subscriber detail modals expose blank future fields and disabled mutations
         ->toMatch('/<input(?=[^>]*name="service_password")(?=[^>]*type="password")(?=[^>]*value="")[^>]*>/i');
 });
 
-test('subscriber detail data regions remain explicitly empty', function () {
+test('subscriber detail displays persisted identity and keeps future data regions explicit', function () {
     $response = subscriberDetailsResponse($this);
 
     $response
         ->assertOk()
+        ->assertSee('00001234')
+        ->assertSee('Alex Santos')
+        ->assertSee('alex@rodjen')
+        ->assertSee('Configured')
+        ->assertSee('CALLER-00001234')
+        ->assertDontSee('never-render-this-secret')
         ->assertSee('Not available')
         ->assertSee('No comments yet')
         ->assertSee('No transactions yet')

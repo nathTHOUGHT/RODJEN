@@ -38,11 +38,16 @@ dataset('invalid plan speeds', [
     'above maximum' => [100001, false],
 ]);
 
-test('plan seed creates the supplied sample exactly once', function () {
-    $this->seed(PlanSeeder::class);
+test('plan seed creates the supplied sample exactly once without resetting recorded usage', function () {
     $this->seed(PlanSeeder::class);
 
     $plan = Plan::query()->sole();
+
+    expect($plan->usage_count)->toBe(106);
+
+    $plan->increment('usage_count');
+    $this->seed(PlanSeeder::class);
+    $plan->refresh();
 
     expect($plan)
         ->name->toBe('ADVOCACY PLAN 649/45MBPS')
@@ -50,8 +55,9 @@ test('plan seed creates the supplied sample exactly once', function () {
         ->transaction_type->toBe('mrc')
         ->speed_mbps->toBe(45)
         ->price->toBe('649.00')
-        ->usage_count->toBe(106)
-        ->and($plan->transactionTypeLabel())->toBe('Monthly Recurring Charge (MRC)');
+        ->usage_count->toBe(107)
+        ->and($plan->transactionTypeLabel())->toBe('Monthly Recurring Charge (MRC)')
+        ->and(Plan::query()->count())->toBe(1);
 });
 
 test('plan catalogue can be searched by persisted plan details', function () {
@@ -215,6 +221,34 @@ test('preview administrator can update a plan without changing its unique name',
     ]);
 
     expect($plan->refresh()->speed_mbps)->toBe(200);
+});
+
+test('an assigned monthly plan cannot be changed to a non-monthly transaction type', function () {
+    $plan = Plan::query()->create(planAttributes());
+
+    $this
+        ->withSession(planPreviewSession())
+        ->post(route('subscribers.store'), [
+            'account_number' => '00005555',
+            'first_name' => 'Assigned',
+            'last_name' => 'Subscriber',
+            'billing_address' => '123 Sample Lane',
+            'plan_id' => $plan->id,
+        ])
+        ->assertSessionHasNoErrors();
+
+    $editUrl = route('products.index', ['edit' => $plan->id]);
+
+    $this
+        ->withSession(planPreviewSession())
+        ->from($editUrl)
+        ->patch(route('products.update', $plan), planAttributes([
+            'transaction_type' => 'otc',
+        ]))
+        ->assertRedirect($editUrl)
+        ->assertSessionHasErrors(['transaction_type']);
+
+    expect($plan->refresh()->transaction_type)->toBe('mrc');
 });
 
 test('preview administrator can delete a plan', function () {

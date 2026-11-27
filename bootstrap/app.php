@@ -13,11 +13,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trimStrings(except: ['pppoe_password']);
+
         $middleware->alias([
             'panel.access' => EnsurePanelAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash('pppoe_password');
+
+        $exceptions->render(function (Throwable $_, Request $request): void {
+            $request->offsetUnset('pppoe_password');
+        });
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

@@ -70,7 +70,7 @@ class HomeCalendarController extends Controller
             'month' => $selectedDate->format('F Y'),
         };
 
-        return view('home-calendar', compact('mode', 'selectedDate', 'previousDate', 'nextDate', 'today', 'periodLabel', 'days'));
+        return view('home.index', compact('mode', 'selectedDate', 'previousDate', 'nextDate', 'today', 'periodLabel', 'days'));
     }
 
     public function store(Request $request): RedirectResponse

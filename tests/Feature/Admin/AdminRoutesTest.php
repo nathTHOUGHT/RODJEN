@@ -5,7 +5,6 @@ use App\Models\User;
 dataset('admin page routes', [
     'add subscriber' => ['subscribers.create', 'Add subscriber'],
     'subscriber records' => ['subscribers.index', 'Subscriber records'],
-    'subscriber details' => ['subscribers.details', 'Subscriber details'],
     'products and services' => ['products.index', 'Products and services'],
     'policies and conditions' => ['policies.index', 'Policies and conditions'],
     'reports overview' => ['reports.index', 'Reports'],

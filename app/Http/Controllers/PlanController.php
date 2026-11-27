@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -65,9 +66,27 @@ class PlanController extends Controller
     {
         $validatedPlan = $this->validatedPlan($request, $plan);
 
-        try {
-            $plan->update($validatedPlan);
-        } catch (UniqueConstraintViolationException) {
+        $duplicateName = false;
+
+        DB::transaction(function () use ($plan, $validatedPlan, &$duplicateName): void {
+            $lockedPlan = Plan::query()
+                ->lockForUpdate()
+                ->findOrFail($plan->getKey());
+
+            if ($validatedPlan['transaction_type'] !== 'mrc' && $lockedPlan->subscriptions()->exists()) {
+                throw ValidationException::withMessages([
+                    'transaction_type' => __('An assigned subscriber plan must remain a monthly recurring charge.'),
+                ]);
+            }
+
+            try {
+                $lockedPlan->update($validatedPlan);
+            } catch (UniqueConstraintViolationException) {
+                $duplicateName = true;
+            }
+        }, 3);
+
+        if ($duplicateName) {
             $this->throwDuplicateNameValidation();
         }
 

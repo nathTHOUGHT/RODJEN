@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Plan;
+use App\Models\Subscriber;
 use Database\Seeders\PlanSeeder;
 
 beforeEach(function () {
@@ -23,7 +25,9 @@ test('dashboard renders a neutral month overview', function () {
         ->assertSee('No activity scheduled');
 });
 
-test('add subscriber groups its fields in the frontend-only layout', function () {
+test('add subscriber renders a database-backed form with monthly plans', function () {
+    $this->seed(PlanSeeder::class);
+
     $response = $this->get(route('subscribers.create'));
 
     $response
@@ -60,21 +64,61 @@ test('add subscriber groups its fields in the frontend-only layout', function ()
         ->assertSee('MAC address')
         ->assertSee('Cancel')
         ->assertSee('Submit')
-        ->assertSee('data-ui-only-form', false)
-        ->assertSee('data-test="subscriber-create-disabled"', false)
-        ->assertSee('type="button"', false)
-        ->assertSee('disabled', false);
+        ->assertSee('action="'.route('subscribers.store').'"', false)
+        ->assertSee('method="POST"', false)
+        ->assertSee('name="account_number"', false)
+        ->assertSee('name="plan_id"', false)
+        ->assertSee('name="pppoe_username"', false)
+        ->assertSee('name="pppoe_password"', false)
+        ->assertSee('ADVOCACY PLAN 649/45MBPS')
+        ->assertSee('type="submit"', false)
+        ->assertDontSee('data-ui-only-form', false)
+        ->assertDontSee('data-test="subscriber-create-disabled"', false);
 });
 
-test('subscriber records links a demo account to its populated details', function () {
+test('add subscriber displays validation errors and never flashes the pppoe password', function () {
+    $response = $this
+        ->followingRedirects()
+        ->from(route('subscribers.create'))
+        ->post(route('subscribers.store'), [
+            'account_number' => '00009999',
+            'first_name' => '',
+            'last_name' => '',
+            'billing_address' => '',
+            'pppoe_password' => 'never-render-this-secret',
+        ]);
+
+    $response
+        ->assertOk()
+        ->assertSee('The first name field is required.')
+        ->assertSee('value="00009999"', false)
+        ->assertSee('id="pppoe-password"', false)
+        ->assertDontSee('never-render-this-secret');
+
+    expect(session()->getOldInput('pppoe_password'))->toBeNull();
+});
+
+test('subscriber records link a saved account to its populated details', function () {
+    $this->seed(PlanSeeder::class);
+    $plan = Plan::query()->where('transaction_type', 'mrc')->firstOrFail();
+
+    $this->post(route('subscribers.store'), [
+        'account_number' => '00001234',
+        'first_name' => 'Alex',
+        'last_name' => 'Santos',
+        'billing_address' => '123 Sample Lane',
+        'plan_id' => $plan->id,
+        'billing_day' => 15,
+        'pppoe_username' => 'alex@rodjen',
+    ])->assertSessionHasNoErrors();
+
+    $subscriber = Subscriber::query()->firstOrFail();
     $response = $this->get(route('subscribers.index'));
 
     $response
         ->assertOk()
         ->assertSee('Area')
         ->assertSee('Status')
-        ->assertSee('Due from')
-        ->assertSee('Due to')
         ->assertSee('Search')
         ->assertSeeInOrder([
             'Account',
@@ -86,17 +130,16 @@ test('subscriber records links a demo account to its populated details', functio
             'Balance',
             'Remarks',
         ])
-        ->assertSee('Sample subscriber')
-        ->assertSee('DEMO-0001')
-        ->assertSee('href="'.route('subscribers.details').'"', false);
+        ->assertSee('Alex Santos')
+        ->assertSee('00001234')
+        ->assertSee('href="'.route('subscribers.details', $subscriber).'"', false);
 
-    $this->get(route('subscribers.details'))
+    $this->get(route('subscribers.details', $subscriber))
         ->assertOk()
-        ->assertSee('Sample subscriber')
-        ->assertSee('DEMO-0001')
-        ->assertSee('Alex Sample')
-        ->assertSee('Fiber 100 Mbps')
-        ->assertSee('demo-alex');
+        ->assertSee('00001234')
+        ->assertSee('Alex Santos')
+        ->assertSee($plan->name)
+        ->assertSee('alex@rodjen');
 });
 
 test('products and services renders plan cards and an accessible add dialog', function () {

@@ -1,6 +1,6 @@
 <x-layouts::app :title="__('Subscriber details')">
     <x-admin.page-heading title="Subscriber details" section="Subscriptions">
-        <x-slot:description>Sample subscriber · {{ $sampleSubscriber['personal']['Name'] }} · {{ $sampleSubscriber['personal']['Account number'] }}</x-slot:description>
+        <x-slot:description>{{ $subscriber->fullName() }} &middot; {{ $subscriber->account_number }}</x-slot:description>
     </x-admin.page-heading>
 
     @php
@@ -18,6 +18,12 @@
     @endphp
 
     <div x-data class="space-y-4">
+        @if (session('status'))
+            <div role="status" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+                {{ session('status') }}
+            </div>
+        @endif
+
         <div class="rounded-xl border border-slate-200 bg-slate-100 p-3 dark:border-slate-800 dark:bg-slate-900/60">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap gap-2" role="group" aria-label="Subscriber actions">
@@ -50,15 +56,15 @@
         <div class="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)_minmax(0,1.45fr)]">
             @include('admin.subscribers.detail-panel', [
                 'title' => 'Personal Details',
-                'fields' => ['Account number', 'Name', 'Landmark', 'Address', 'Contact number', 'Email', 'Coordinates', 'Remarks'],
-                'values' => $sampleSubscriber['personal'],
+                'fields' => ['Account number', 'Name', 'Area', 'Landmark', 'Address', 'Contact number', 'Email', 'Coordinates', 'Remarks'],
+                'values' => $subscriberData['personal'],
                 'editable' => true,
             ])
 
             @include('admin.subscribers.detail-panel', [
                 'title' => 'Service Details',
-                'fields' => ['Plan', 'MRC', 'Discount', 'Installation date', 'Due date', 'Billing status', 'Next due date', 'Billing period', 'Last due date', 'Promise date'],
-                'values' => $sampleSubscriber['service'],
+                'fields' => ['Plan', 'MRC', 'Service type', 'Installation date', 'Subscription date', 'Bill generation day', 'Credit limit', 'Due date', 'Billing status', 'Next due date', 'Billing period', 'Last due date', 'Promise date'],
+                'values' => $subscriberData['service'],
                 'editable' => true,
             ])
 
@@ -70,14 +76,14 @@
                 @include('admin.subscribers.detail-panel', [
                     'title' => 'MikroTik Details',
                     'fields' => ['Name', 'Password', 'Profile', 'Comment'],
-                    'values' => $sampleSubscriber['mikrotik'],
+                    'values' => $subscriberData['mikrotik'],
                     'editable' => true,
                 ])
 
                 @include('admin.subscribers.detail-panel', [
                     'title' => 'MikroTik parameters',
-                    'fields' => ['IP address', 'Caller ID', 'Uptime', 'Last logout'],
-                    'values' => $sampleSubscriber['parameters'],
+                    'fields' => ['IP address', 'Caller ID', 'MAC address', 'Uptime', 'Last logout'],
+                    'values' => $subscriberData['parameters'],
                     'editable' => false,
                 ])
             </div>
@@ -99,10 +105,15 @@
             <div class="grid gap-4 p-4 md:grid-cols-2">
                 @foreach ([
                     'Service information' => ['Service state', 'Subscription'],
-                    'Network information' => ['Coverage map', 'Customer location', 'Network path', 'PON details'],
+                    'Network information' => ['External URL', 'Image URL', 'OLT device', 'PON port', 'NAP device', 'NAP port', 'ONU name', 'Network remarks'],
                     'Transaction summary' => ['Current balance'],
                 ] as $title => $fields)
-                    @include('admin.subscribers.detail-panel', ['title' => $title, 'fields' => $fields, 'editable' => false])
+                    @include('admin.subscribers.detail-panel', [
+                        'title' => $title,
+                        'fields' => $fields,
+                        'values' => $subscriberData['additional'],
+                        'editable' => false,
+                    ])
                 @endforeach
 
                 @foreach (['System logs' => 'No system logs yet', 'Activity logs' => 'No activity logs yet'] as $title => $message)
