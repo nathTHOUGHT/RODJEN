@@ -69,7 +69,30 @@
             ])
 
             <x-admin.panel title="Comment list" class="min-w-0">
-                <x-admin.empty-table :columns="['Comment', 'Timestamp', 'Commenter']" message="No comments yet" />
+                @if ($subscriber->comments->isEmpty())
+                    <x-admin.empty-table :columns="['Comment', 'Timestamp', 'Commenter']" message="No comments yet" />
+                @else
+                    <div class="max-h-80 overflow-auto overscroll-contain scrollbar-hidden" data-table-scroll>
+                        <table class="min-w-full border-separate border-spacing-0 text-left text-sm">
+                            <thead>
+                                <tr>
+                                    @foreach (['Comment', 'Timestamp (Manila time)', 'Commenter'] as $column)
+                                        <th scope="col" class="sticky top-0 z-10 whitespace-nowrap border-b border-slate-200 bg-slate-50 px-4 py-3 font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">{{ $column }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($subscriber->comments as $comment)
+                                    <tr>
+                                        <td class="max-w-sm whitespace-pre-wrap break-words border-b border-slate-200 px-4 py-3 dark:border-slate-800">{{ $comment->comment }}</td>
+                                        <td class="whitespace-nowrap border-b border-slate-200 px-4 py-3 dark:border-slate-800">{{ $comment->created_at->timezone('Asia/Manila')->format('M j, Y g:i A') }}</td>
+                                        <td class="whitespace-nowrap border-b border-slate-200 px-4 py-3 dark:border-slate-800">{{ $comment->commenter_name }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             </x-admin.panel>
 
             <div class="grid min-w-0 content-start gap-4">

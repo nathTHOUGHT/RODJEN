@@ -417,6 +417,49 @@ test('subscriber details show only the selected persisted account without exposi
         ->assertDontSee('other-secret');
 });
 
+test('subscriber comments are saved with their author and displayed on the detail page', function () {
+    $this->post('/subscriptions/records', subscriberPayload())->assertSessionHasNoErrors();
+
+    $this->post(route('subscribers.comments.store', 1), [
+        'comment' => 'Called subscriber; <script>alert(1)</script> will follow up tomorrow.',
+    ])
+        ->assertRedirect(route('subscribers.details', 1))
+        ->assertSessionHas('status', 'Comment added.');
+
+    $this->assertDatabaseHas('subscriber_comments', [
+        'subscriber_id' => 1,
+        'user_id' => null,
+        'commenter_name' => 'Admin',
+        'comment' => 'Called subscriber; <script>alert(1)</script> will follow up tomorrow.',
+    ]);
+    DB::table('subscriber_comments')
+        ->where('subscriber_id', 1)
+        ->update(['created_at' => '2026-11-28 01:15:00']);
+
+    $this->get(route('subscribers.details', 1))
+        ->assertOk()
+        ->assertSee('Called subscriber; &lt;script&gt;alert(1)&lt;/script&gt; will follow up tomorrow.', false)
+        ->assertSee('max-h-80 overflow-auto overscroll-contain scrollbar-hidden', false)
+        ->assertSee('sticky top-0 z-10 whitespace-nowrap', false)
+        ->assertSee('Nov 28, 2026 9:15 AM')
+        ->assertSee('Admin')
+        ->assertDontSee('<script>alert(1)</script>', false)
+        ->assertDontSee('No comments yet');
+});
+
+test('subscriber comments require non-empty text', function () {
+    $this->post('/subscriptions/records', subscriberPayload())->assertSessionHasNoErrors();
+
+    $this->from(route('subscribers.details', 1))
+        ->followingRedirects()
+        ->post(route('subscribers.comments.store', 1), ['comment' => '   '])
+        ->assertOk()
+        ->assertSee('The comment field is required.')
+        ->assertSee('x-init="$el.showModal()"', false);
+
+    $this->assertDatabaseCount('subscriber_comments', 0);
+});
+
 test('a pppoe password containing zero is still reported as configured', function () {
     $this->post('/subscriptions/records', subscriberPayload([
         'account_number' => '00000044',

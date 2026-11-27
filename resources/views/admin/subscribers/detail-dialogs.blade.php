@@ -30,23 +30,23 @@
     id="subscriber-comment-dialog"
     aria-labelledby="subscriber-comment-title"
     class="{{ $dialogClasses }}"
-    x-data="{ timestamp: new Date().toLocaleString() }"
-    x-on:toggle="if ($el.open) timestamp = new Date().toLocaleString()"
+    @if ($errors->has('comment')) x-init="$el.showModal()" @endif
 >
     <h2 id="subscriber-comment-title" class="text-lg font-semibold">Comment</h2>
 
-    <dl class="mt-4 flex flex-wrap gap-x-2 text-sm">
-        <dt class="font-medium">Timestamp</dt>
-        <dd class="text-slate-600 dark:text-slate-400" x-text="timestamp"></dd>
-    </dl>
-    <label class="mt-4 {{ $labelClasses }}">
-        Comment
-        <textarea name="comment" rows="4" class="{{ $fieldClasses }}"></textarea>
-    </label>
-
-    <form method="dialog" class="mt-5 flex justify-end gap-2">
-        <button type="submit" class="{{ $cancelClasses }}">Cancel</button>
-        <button type="button" disabled data-test="subscriber-comment-disabled" class="{{ $disabledClasses }}">Save</button>
+    <form method="post" action="{{ route('subscribers.comments.store', $subscriber) }}" class="mt-4">
+        @csrf
+        <label class="{{ $labelClasses }}">
+            Comment
+            <textarea name="comment" rows="4" maxlength="5000" required @if ($errors->has('comment')) aria-describedby="subscriber-comment-error" @endif class="{{ $fieldClasses }}">{{ old('comment') }}</textarea>
+        </label>
+        @error('comment')
+            <p id="subscriber-comment-error" role="alert" class="mt-2 text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+        @enderror
+        <div class="mt-5 flex justify-end gap-2">
+            <button type="button" x-on:click="$el.closest('dialog').close()" class="{{ $cancelClasses }}">Cancel</button>
+            <button type="submit" class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800 focus-visible:outline-2 focus-visible:outline-cyan-600">Save</button>
+        </div>
     </form>
 </dialog>
 

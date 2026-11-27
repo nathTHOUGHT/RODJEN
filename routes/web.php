@@ -27,6 +27,9 @@ Route::middleware('panel.access')->group(function () {
         Route::get('account-number', [SubscriberController::class, 'generateAccountNumber'])->name('subscribers.account-number');
         Route::post('records', [SubscriberController::class, 'store'])->name('subscribers.store');
         Route::get('records', [SubscriberController::class, 'index'])->name('subscribers.index');
+        Route::post('records/{subscriber}/comments', [SubscriberController::class, 'storeComment'])
+            ->whereNumber('subscriber')
+            ->name('subscribers.comments.store');
         Route::get('records/{subscriber}', [SubscriberController::class, 'show'])
             ->whereNumber('subscriber')
             ->name('subscribers.details');

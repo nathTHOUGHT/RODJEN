@@ -126,6 +126,8 @@ test('subscriber detail modals expose blank future fields and disabled mutations
     expectDisabledSubscriberAction($html, 'subscriber-billing-disabled');
     expectDisabledSubscriberAction($html, 'subscriber-override-disabled');
     expectDisabledSubscriberAction($html, 'subscriber-transaction-disabled');
+    expect($html)->not->toMatch('/<button(?=[^>]*data-test="subscriber-comment-disabled")[^>]*>/');
+    expect($html)->toMatch('/<form(?=[^>]*method="post")(?=[^>]*action="'.preg_quote(route('subscribers.comments.store', 1), '/').'")/');
 
     expect($html)
         ->toMatch('/<input(?=[^>]*name="service_username")(?=[^>]*value="")[^>]*>/i')

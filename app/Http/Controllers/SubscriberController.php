@@ -165,13 +165,34 @@ class SubscriberController extends Controller
         $subscriberId = $this->subscriberId($subscriber);
 
         $subscriber = Subscriber::query()
-            ->with(['subscription.plan', 'subscription.networkAccount'])
+            ->with([
+                'subscription.plan',
+                'subscription.networkAccount',
+                'comments' => fn ($query) => $query->latest(),
+            ])
             ->findOrFail($subscriberId);
 
         return view('admin.subscribers.show', [
             'subscriber' => $subscriber,
             'subscriberData' => $this->detailsFor($subscriber),
         ]);
+    }
+
+    public function storeComment(Request $request, string $subscriber): RedirectResponse
+    {
+        $data = $request->validate([
+            'comment' => ['required', 'string', 'max:5000'],
+        ]);
+        $subscriber = Subscriber::query()->findOrFail($this->subscriberId($subscriber));
+        $user = $request->user();
+
+        $subscriber->comments()->create([
+            'user_id' => $user?->id,
+            'commenter_name' => $user?->name ?? $request->session()->get('preview.user.name', 'Admin'),
+            'comment' => $data['comment'],
+        ]);
+
+        return to_route('subscribers.details', $subscriber)->with('status', __('Comment added.'));
     }
 
     /** @return array<string, mixed> */
