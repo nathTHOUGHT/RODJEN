@@ -339,6 +339,21 @@ class SubscriberController extends Controller
         $subscription = $subscriber->subscription;
         $networkAccount = $subscription?->networkAccount;
         $billingDay = $subscription?->billing_day;
+        $installationDate = $subscription?->installation_date ?? $subscription?->subscription_date;
+        $dueDate = null;
+
+        if ($billingDay !== null) {
+            $suffix = match ($billingDay % 100) {
+                11, 12, 13 => 'th',
+                default => match ($billingDay % 10) {
+                    1 => 'st',
+                    2 => 'nd',
+                    3 => 'rd',
+                    default => 'th',
+                },
+            };
+            $dueDate = "Every {$billingDay}{$suffix} of the month";
+        }
 
         return [
             'personal' => [
@@ -357,11 +372,10 @@ class SubscriberController extends Controller
                 'Plan' => $subscription?->plan?->name,
                 'MRC' => $subscription?->plan ? 'PHP '.number_format((float) $subscription->plan->price, 2) : null,
                 'Service type' => $subscription?->service_type ? str($subscription->service_type)->headline()->value() : null,
-                'Installation date' => $subscription?->installation_date?->format('M j, Y'),
-                'Subscription date' => $subscription?->subscription_date?->format('M j, Y'),
-                'Bill generation day' => $billingDay ? "Day {$billingDay} of each month" : null,
+                'Installation date' => $installationDate?->format('M j, Y'),
+                'Bill generation' => '7 days before due date',
                 'Credit limit' => $subscription ? 'PHP '.number_format((float) $subscription->credit_limit, 2) : null,
-                'Due date' => null,
+                'Due date' => $dueDate,
                 'Billing status' => $subscription?->status ? str($subscription->status)->headline()->value() : null,
                 'Billing period' => $subscription ? 'Monthly' : null,
             ],

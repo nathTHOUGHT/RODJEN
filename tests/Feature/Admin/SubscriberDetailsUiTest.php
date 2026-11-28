@@ -60,22 +60,15 @@ test('subscriber details presents the toolbar and information panels in layout o
     $response
         ->assertOk()
         ->assertSeeInOrder([
-            'Archive',
-            'Thermal',
-            'A4',
-            'A4 SOA',
-            'Transaction',
-            'Comment',
-            'Mark as pulled out',
-            'Promise',
-            'Return to records',
             'Personal Details',
             'Service Details',
-            'Comment list',
             'MikroTik Details',
             'MikroTik parameters',
             'Transaction list',
         ])
+        ->assertSee('Timestamp (Manila time)')
+        ->assertSee('Commenter')
+        ->assertDontSee('Comment list')
         ->assertSee('Additional details')
         ->assertSee('External URL')
         ->assertSee('Image URL')
@@ -96,13 +89,16 @@ test('subscriber details presents the toolbar and information panels in layout o
         ->assertSee('Billing status')
         ->assertSee('Service state')
         ->assertSee('Override date')
+        ->assertSee('aria-label="Archive"', false)
+        ->assertSee('aria-label="Thermal"', false)
+        ->assertSee('aria-label="A4 SOA"', false)
+        ->assertSee('aria-label="Mark as pulled out"', false)
         ->assertDontSee('<img', false)
-        ->assertDontSee('<svg', false)
         ->assertDontSee('<iframe', false)
         ->assertDontSee('<canvas', false);
 
     $recordsUrl = preg_quote(route('subscribers.index'), '/');
-    expect($response->getContent())->toMatch('/<a\b[^>]*href="'.$recordsUrl.'"[^>]*>\s*Return to records\s*<\/a>/');
+    expect($response->getContent())->toMatch('/<a\b[^>]*href="'.$recordsUrl.'"[^>]*>\s*Return to\s+records\s*<\/a>/');
 });
 
 test('subscriber detail modals expose blank future fields and disabled mutations', function () {

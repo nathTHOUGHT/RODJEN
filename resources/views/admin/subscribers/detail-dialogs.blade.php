@@ -111,7 +111,7 @@
                 @enderror
             </label>
             <label class="{{ $labelClasses }}">
-                Bill generation day
+                Due date day (1–31)
                 <input name="billing_day" type="number" min="1" max="31" value="{{ old('billing_day', $subscription?->billing_day) }}" class="{{ $fieldClasses }}">
                 @error('billing_day')
                     <span role="alert" class="text-sm font-normal text-red-600">{{ $message }}</span>

@@ -401,9 +401,15 @@ test('subscriber details show only the selected persisted account and its passwo
         ->assertSee('Selected Subscriber')
         ->assertSee('selected@rodjen')
         ->assertSee('Fiber 100 Mbps')
-        ->assertSeeInOrder(['Bill generation day', 'Day 15 of each month', 'Due date'])
+        ->assertSeeInOrder([
+            'Installation date',
+            'Nov 20, 2026',
+            'Bill generation',
+            '7 days before due date',
+            'Due date',
+            'Every 15th of the month',
+        ])
         ->assertSee('Subscription date')
-        ->assertSee('Nov 15, 2026')
         ->assertSee('Credit limit')
         ->assertSee('PHP 1,500.00')
         ->assertSee('External URL')
@@ -415,6 +421,25 @@ test('subscriber details show only the selected persisted account and its passwo
         ->assertSee('selected-secret')
         ->assertDontSee('00000022')
         ->assertDontSee('other-secret');
+});
+
+test('subscriber details fall back to the existing subscription date and show the billing schedule', function () {
+    $this->post('/subscriptions/records', subscriberPayload([
+        'installation_date' => null,
+        'subscription_date' => '2026-11-15',
+        'billing_day' => 2,
+    ]))->assertSessionHasNoErrors();
+
+    $this->get('/subscriptions/records/1')
+        ->assertOk()
+        ->assertSeeInOrder([
+            'Installation date',
+            'Nov 15, 2026',
+            'Bill generation',
+            '7 days before due date',
+            'Due date',
+            'Every 2nd of the month',
+        ]);
 });
 
 test('subscriber comments are saved with their author and displayed on the detail page', function () {
@@ -436,15 +461,21 @@ test('subscriber comments are saved with their author and displayed on the detai
         ->where('subscriber_id', 1)
         ->update(['created_at' => '2026-11-28 01:15:00']);
 
-    $this->get(route('subscribers.details', 1))
+    $response = $this->get(route('subscribers.details', 1))
         ->assertOk()
         ->assertSee('Called subscriber; &lt;script&gt;alert(1)&lt;/script&gt; will follow up tomorrow.', false)
-        ->assertSee('max-h-80 overflow-auto overscroll-contain scrollbar-hidden', false)
+        ->assertSee('-m-5 max-h-80 overflow-auto overscroll-contain scrollbar-hidden', false)
+        ->assertSee('self-start', false)
+        ->assertSee('table-fixed', false)
+        ->assertSee('text-left dark:border-slate-800', false)
         ->assertSee('sticky top-0 z-10 whitespace-nowrap', false)
+        ->assertSee('px-4 py-3 text-left text-sm font-semibold', false)
         ->assertSee('Nov 28, 2026 9:15 AM')
         ->assertSee('Admin')
         ->assertDontSee('<script>alert(1)</script>', false)
         ->assertDontSee('No comments yet');
+
+    expect($response->getContent())->toMatch('/<span class="block whitespace-pre-wrap">Called subscriber;/');
 });
 
 test('subscriber comments require non-empty text', function () {

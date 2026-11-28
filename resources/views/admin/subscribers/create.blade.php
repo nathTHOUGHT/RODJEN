@@ -16,31 +16,13 @@
             [['remarks', 'remarks', 'Remarks', 'text', 'uppercase']],
             [['external_url', 'external-url', 'External URL', 'url']],
         ];
-        $installationFields = [
-            ['installation_date', 'installation-date', 'Installation date', 'date'],
-        ];
-        $subscriptionFields = [
-            ['billing_day', 'bill-generation', 'Bill generation day (1–31)', 'number'],
-        ];
+        $installationFields = [['installation_date', 'installation-date', 'Installation date', 'date']];
+        $subscriptionFields = [['billing_day', 'due-date-day', 'Due date day (1–31)', 'number']];
         $mikrotikFields = [
             ['pppoe_username', 'pppoe-name', 'PPPoE name', 'text'],
             ['pppoe_password', 'pppoe-password', 'PPPoE password', 'text'],
             ['pppoe_profile', 'pppoe-profile', 'PPPoE profile', 'text'],
             ['pppoe_comment', 'pppoe-comment', 'PPPoE comment', 'text', null, 'readonly'],
-        ];
-        $additionalFields = [
-            ['area', 'area', 'Area', 'text'],
-            ['subscription_date', 'subscription-date', 'Subscription date', 'date'],
-            ['credit_limit', 'credit-limit', 'Credit limit', 'number'],
-            ['image_url', 'image-url', 'Image URL', 'url'],
-            ['olt_device', 'olt-device', 'OLT device', 'text'],
-            ['pon_port', 'pon-port', 'PON port', 'text'],
-            ['nap_device', 'nap-device', 'NAP device', 'text'],
-            ['nap_port', 'nap-port', 'NAP port', 'text'],
-            ['onu_name', 'onu-name', 'ONU name', 'text'],
-            ['caller_id', 'caller-id', 'Caller ID or PPPoE identifier', 'text'],
-            ['mac_address', 'mac-address', 'MAC address', 'text'],
-            ['network_remarks', 'network-remarks', 'Network remarks', 'text'],
         ];
         $requiredFields = ['account_number', 'first_name', 'last_name', 'billing_address'];
     @endphp
@@ -82,8 +64,7 @@
                         <div class="grid gap-3 sm:grid-cols-2 sm:items-start">
                             @include('admin.subscribers.fields', ['fields' => $installationFields])
                             <div class="grid min-w-0 gap-1.5">
-                                <select id="plan" name="plan_id"
-                                    aria-label="Plan"
+                                <select id="plan" name="plan_id" aria-label="Plan"
                                     @if ($errors->has('plan_id')) aria-invalid="true" aria-describedby="plan-error" @endif
                                     class="h-11 w-full min-w-0 rounded-full border bg-white px-4 text-sm font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('plan_id') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}">
                                     <option value="">No plan assigned</option>
@@ -111,12 +92,6 @@
                     </div>
                 </x-admin.panel>
 
-                <x-admin.panel title="Additional details">
-                    <div class="grid gap-3 sm:grid-cols-2">
-                        @include('admin.subscribers.fields', ['fields' => $additionalFields])
-                    </div>
-                </x-admin.panel>
-
                 <div class="flex flex-wrap justify-center gap-3">
                     <a href="{{ route('subscribers.index') }}"
                         class="min-w-28 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">Cancel</a>
@@ -141,7 +116,9 @@
 
                 try {
                     const response = await fetch(@json(route('subscribers.account-number')), {
-                        headers: { Accept: 'application/json' },
+                        headers: {
+                            Accept: 'application/json'
+                        },
                     });
                     const result = await response.json();
 
@@ -150,24 +127,18 @@
                     }
 
                     input.value = result.account_number;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
                 } catch (error) {
-                    message.textContent = error instanceof Error
-                        ? error.message
-                        : 'Could not generate an account number. Please try again.';
+                    message.textContent = error instanceof Error ?
+                        error.message :
+                        'Could not generate an account number. Please try again.';
                 } finally {
                     button.disabled = false;
                 }
             });
         </script>
 
-        {{-- Additional details section is currently commented out. Uncomment the following block to enable it.
-        <details class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <summary class="cursor-pointer rounded-xl px-5 py-3 text-sm font-semibold text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-cyan-600 dark:text-white">Additional details</summary>
-            <div class="grid gap-3 px-5 pb-5 sm:grid-cols-2 xl:grid-cols-3">
-                @include('admin.subscribers.fields', ['fields' => $additionalFields])
-            </div>
-        </details>
-         --}}
     </form>
 </x-layouts::app>
