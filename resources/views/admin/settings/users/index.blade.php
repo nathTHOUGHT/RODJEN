@@ -14,12 +14,6 @@
             x-init="$nextTick(() => $refs.createStaffDialog.showModal())"
         @endif
     >
-        @if (session('status'))
-            <p role="status" class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                {{ session('status') }}
-            </p>
-        @endif
-
         <x-admin.panel title="Staff Accounts">
             <x-slot:actions>
                 <button

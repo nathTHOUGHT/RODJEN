@@ -502,6 +502,7 @@ test('subscriber comments are saved with their author and displayed on the detai
         ->assertSee('Nov 28, 2026 9:15 AM')
         ->assertSee('Admin')
         ->assertDontSee('<script>alert(1)</script>', false)
+        ->assertDontSee('Comment added.')
         ->assertDontSee('No comments yet');
 
     expect($response->getContent())->toMatch('/<span class="block whitespace-pre-wrap">Called subscriber;/');

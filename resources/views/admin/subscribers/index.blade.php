@@ -2,12 +2,6 @@
     <x-admin.page-heading title="Subscriber records" section="Subscriptions" />
 
     <div class="space-y-6">
-        @if (session('status'))
-            <div role="status" class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-                {{ session('status') }}
-            </div>
-        @endif
-
         <x-admin.panel title="Records">
             <x-slot:actions>
                 <a href="{{ route('subscribers.create') }}" class="rounded-md bg-cyan-700 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Add subscriber</a>

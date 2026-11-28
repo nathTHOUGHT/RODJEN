@@ -11,12 +11,6 @@
 
 <x-layouts::app.admin-shell :title="__('Home')">
     <div x-data class="flex min-h-full flex-col" @if ($errors->any()) x-init="$nextTick(() => $refs.noteDialog.showModal())" @endif>
-        @if (session('status'))
-            <p role="status" class="mb-4 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-medium text-cyan-900 dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200">
-                {{ session('status') }}
-            </p>
-        @endif
-
         <section aria-labelledby="home-calendar-title" class="grid min-w-0 flex-1 items-stretch gap-2 rounded-xl border border-slate-200 bg-slate-100 p-2 sm:p-3 lg:grid-cols-[minmax(0,1fr)_minmax(10rem,19%)] dark:border-slate-800 dark:bg-slate-900">
             <div class="flex min-w-0 flex-col gap-2">
                 <header class="flex min-h-10 flex-wrap items-center justify-between gap-2">

@@ -64,8 +64,14 @@ test('subscriber details presents the toolbar and information panels in layout o
             'Service Details',
             'MikroTik Details',
             'MikroTik parameters',
-            'Transaction list',
+            'Plan / Service / Product',
+            'Account',
+            'Credit',
+            'Debit',
+            'Reference no.',
+            'Amount',
         ])
+        ->assertSee('<caption class="sr-only">Transaction list</caption>', false)
         ->assertSee('Timestamp (Manila time)')
         ->assertSee('Commenter')
         ->assertDontSee('Comment list')
@@ -79,7 +85,15 @@ test('subscriber details presents the toolbar and information panels in layout o
         ->assertSee('ONU name')
         ->assertSee('MAC address')
         ->assertSee('Network remarks')
-        ->assertSee('Transaction summary')
+        ->assertSee('aria-label="Balance and transaction summary"', false)
+        ->assertSee('Total payment received')
+        ->assertSee('Total invoice created')
+        ->assertSee('Total rebates applied')
+        ->assertSee('Total discounts claimed')
+        ->assertSee('min-w-0 self-start xl:col-span-2', false)
+        ->assertSee('BALANCE')
+        ->assertSee('ADVANCE CREDIT:')
+        ->assertSee('auto-rows-fr', false)
         ->assertSee('System logs')
         ->assertSee('Activity logs')
         ->assertSee('Message')
@@ -91,6 +105,49 @@ test('subscriber details presents the toolbar and information panels in layout o
         ->assertSee('Override date')
         ->assertSee('aria-label="Archive"', false)
         ->assertSee('aria-label="Thermal"', false)
+        ->assertSee('id="subscriber-billing-statement-dialog"', false)
+        ->assertSee('aria-label="Billing month"', false)
+        ->assertSee('aria-label="Print billing statement"', false)
+        ->assertSee('Previous 12 Months')
+        ->assertSee('data-print-billing-statement', false)
+        ->assertSee('id="subscriber-billing-statement-preview"', false)
+        ->assertDontSee('max-h-[55vh] overflow-auto', false)
+        ->assertSee('data-statement-format="a4"', false)
+        ->assertSee('data-billing-layout="a4"', false)
+        ->assertSee('data-statement-format="a4-soa"', false)
+        ->assertSee('data-billing-layout="a4-soa"', false)
+        ->assertSee('Print A4 billing statement')
+        ->assertSee('Print A4 statement of account')
+        ->assertSee('size: A4; margin: 12mm', false)
+        ->assertSee('object-contain', false)
+        ->assertSee('window.print()', false)
+        ->assertSee('@media print', false)
+        ->assertSee('size: 48mm 210mm', false)
+        ->assertSee('margin: 0', false)
+        ->assertSee('width: 100%', false)
+        ->assertSee('border: 0 !important', false)
+        ->assertSee('box-shadow: none !important', false)
+        ->assertSee('font-size: 10pt !important', false)
+        ->assertSee('data-receipt-name', false)
+        ->assertSee('data-receipt-total', false)
+        ->assertSee('Billing details')
+        ->assertSee('Service address')
+        ->assertSee('BILLING STATEMENT')
+        ->assertSee('937 RODJEN HINGAL ROAD')
+        ->assertSee('admin@rodjentechnet.com')
+        ->assertSee('09623514508')
+        ->assertSee('Total Balance Due:')
+        ->assertSee('Internet usage:')
+        ->assertSee('Billing period and usage')
+        ->assertSee('STATEMENT OF ACCOUNT SUMMARY')
+        ->assertSee('All recorded transactions')
+        ->assertSee('No transaction or payment records are available for this account yet.')
+        ->assertDontSee('Show 10 entries')
+        ->assertDontSee('Search:')
+        ->assertSee('data-print-billing-date', false)
+        ->assertSee('data-print-due-date', false)
+        ->assertSee('data-billing-day', false)
+        ->assertSee('brand/rodjen-wordmark.png')
         ->assertSee('aria-label="A4 SOA"', false)
         ->assertSee('aria-label="Mark as pulled out"', false)
         ->assertSee('flex flex-nowrap gap-2 overflow-x-auto', false)
@@ -100,11 +157,31 @@ test('subscriber details presents the toolbar and information panels in layout o
         ->assertSee('Post-pullout')
         ->assertSee('title="Reactivate from pullout count"', false)
         ->assertDontSee('Return to records')
-        ->assertDontSee('<img', false)
         ->assertDontSee('<iframe', false)
         ->assertDontSee('<canvas', false);
 
+    expect($response->getContent())
+        ->toMatch('/<label(?=[^>]*data-billing-month-filter)[^>]*>[\s\S]*?<\/label>\s*<button(?=[^>]*data-print-billing-statement)/')
+        ->toMatch('/<button(?=[^>]*aria-label="Thermal")(?=[^>]*aria-haspopup="dialog")(?![^>]*\sdisabled(?:\s|=|>))[^>]*>/')
+        ->toMatch('/<button(?=[^>]*aria-label="A4")(?=[^>]*data-statement-format="a4")(?=[^>]*aria-haspopup="dialog")(?![^>]*\sdisabled(?:\s|=|>))[^>]*>/')
+        ->toMatch('/<button(?=[^>]*aria-label="A4 SOA")(?=[^>]*data-statement-format="a4-soa")(?=[^>]*aria-haspopup="dialog")(?![^>]*\sdisabled(?:\s|=|>))[^>]*>/')
+        ->toMatch('/<dialog(?=[^>]*id="subscriber-billing-statement-dialog")(?=[^>]*scrollbar-hidden)[^>]*>/');
 });
+
+test('billing statements show the due date, billing period and internet usage together', function (string $layout) {
+    $response = subscriberDetailsResponse($this)->assertOk();
+    $document = new DOMDocument;
+    $document->loadHTML($response->getContent(), LIBXML_NOERROR | LIBXML_NOWARNING);
+    $xpath = new DOMXPath($document);
+
+    foreach (['subscriber-billing-statement-preview', 'subscriber-billing-statement-print'] as $container) {
+        $section = "//*[@id='$container']/article[@data-billing-layout='$layout']"
+            .'//section[.//*[@data-print-due-date] and .//*[@data-print-billing-period]]';
+
+        expect($xpath->evaluate("normalize-space($section)"))
+            ->toContain('Due date:', 'Billing period:', 'Internet usage:');
+    }
+})->with(['a4', 'thermal']);
 
 test('subscriber detail modals expose blank future fields and disabled mutations', function () {
     $response = subscriberDetailsResponse($this);

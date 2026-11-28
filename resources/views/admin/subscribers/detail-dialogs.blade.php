@@ -278,3 +278,44 @@
         <button type="button" disabled data-test="subscriber-transaction-disabled" class="{{ $disabledClasses }}">Submit</button>
     </form>
 </dialog>
+
+<dialog id="subscriber-billing-statement-dialog" aria-labelledby="subscriber-billing-statement-title" data-billing-format="thermal" class="{{ $dialogClasses }} scrollbar-hidden">
+    <h2 id="subscriber-billing-statement-title" class="text-lg font-semibold">Print billing statement</h2>
+
+    <div class="mt-4 flex items-end gap-2">
+        <label for="subscriber-billing-month" data-billing-month-filter class="{{ $labelClasses }} min-w-0 flex-1">
+            Billing month
+            <select id="subscriber-billing-month" aria-label="Billing month" class="{{ $fieldClasses }}">
+                @for ($monthsAgo = 0; $monthsAgo <= 12; $monthsAgo++)
+                    @php($monthOption = now()->startOfMonth()->subMonths($monthsAgo))
+                    <option value="{{ $monthOption->format('Y-m') }}" data-month-label="{{ $monthOption->format('F Y') }}">
+                        {{ $monthsAgo === 0 ? 'Current Month' : 'Previous '.$monthsAgo.' '.($monthsAgo === 1 ? 'Month' : 'Months') }}
+                    </option>
+                @endfor
+            </select>
+        </label>
+
+        <button type="button" data-print-billing-statement aria-label="Print billing statement"
+            title="Print billing statement"
+            class="grid size-11 shrink-0 place-items-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-5">
+                <path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" />
+                <path d="M7 14h10v7H7zM17 12h.01" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="mt-4 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
+        <div id="subscriber-billing-statement-preview" data-billing-format="thermal" role="region" aria-label="Statement preview"
+            class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">
+            @include('admin.subscribers.billing-statement')
+            @include('admin.subscribers.billing-statement-a4')
+            @include('admin.subscribers.account-statement-a4')
+        </div>
+    </div>
+
+    <form method="dialog" class="mt-5 flex justify-end">
+        <button type="submit" class="{{ $cancelClasses }}">Close</button>
+    </form>
+</dialog>
