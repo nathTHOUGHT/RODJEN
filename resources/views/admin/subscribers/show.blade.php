@@ -24,15 +24,13 @@
             <div class="flex flex-nowrap gap-2 overflow-x-auto xl:shrink-0" role="group" aria-label="Subscriber actions">
                 @foreach ($actions as $label => $dialog)
                     <button type="button" aria-label="{{ $label }}" title="{{ $label }}"
-                        @if (in_array($label, ['Thermal', 'A4', 'A4 SOA'], true))
-                            data-statement-format="{{ $label === 'A4 SOA' ? 'a4-soa' : strtolower($label) }}"
+                        @if (in_array($label, ['Thermal', 'A4', 'A4 SOA'], true)) data-statement-format="{{ $label === 'A4 SOA' ? 'a4-soa' : strtolower($label) }}"
                             aria-haspopup="dialog"
                         @elseif ($dialog)
                             x-on:click="document.getElementById('subscriber-{{ $dialog }}-dialog').showModal()"
                             aria-haspopup="dialog"
                         @else
-                            disabled
-                        @endif
+                            disabled @endif
                         class="grid size-9 shrink-0 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:enabled:border-cyan-600 hover:enabled:text-cyan-700 focus-visible:outline-2 focus-visible:outline-cyan-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
@@ -393,11 +391,11 @@
                     preview.dataset.billingFormat = format;
                     preview.tabIndex = isA4 ? 0 : -1;
                     monthFilter.classList.toggle('hidden', format === 'a4-soa');
-                    const title = format === 'a4-soa'
-                        ? 'Print A4 statement of account'
-                        : format === 'a4'
-                            ? 'Print A4 billing statement'
-                            : 'Print thermal billing statement';
+                    const title = format === 'a4-soa' ?
+                        'Print A4 statement of account' :
+                        format === 'a4' ?
+                        'Print A4 billing statement' :
+                        'Print thermal billing statement';
                     dialogTitle.textContent = title;
                     printButton.setAttribute('aria-label', title);
                     printButton.setAttribute('title', title);
@@ -484,11 +482,13 @@
         </script>
 
         <style>
-            #subscriber-billing-statement-dialog:is([data-billing-format="a4"], [data-billing-format="a4-soa"]) {
+            #subscriber-billing-statement-dialog:is([data-billing-format="a4"],
+            [data-billing-format="a4-soa"]) {
                 max-width: 50rem;
             }
 
-            #subscriber-billing-statement-preview:is([data-billing-format="a4"], [data-billing-format="a4-soa"]) {
+            #subscriber-billing-statement-preview:is([data-billing-format="a4"],
+            [data-billing-format="a4-soa"]) {
                 overflow-x: auto;
             }
 
@@ -513,7 +513,7 @@
                     background: #fff;
                 }
 
-                body:has(> #subscriber-billing-statement-print) > :not(#subscriber-billing-statement-print) {
+                body:has(> #subscriber-billing-statement-print)> :not(#subscriber-billing-statement-print) {
                     display: none !important;
                 }
 
