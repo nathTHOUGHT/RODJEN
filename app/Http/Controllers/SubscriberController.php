@@ -118,6 +118,7 @@ class SubscriberController extends Controller
                     'plan_id' => $plan?->id,
                     'installation_date' => $data['installation_date'] ?? null,
                     'billing_day' => $data['billing_day'] ?? null,
+                    'bill_generation_days' => $data['bill_generation_days'] ?? 7,
                     'subscription_date' => $data['subscription_date'] ?? null,
                     'credit_limit' => $data['credit_limit'] ?? 0,
                     'service_type' => 'fiber',
@@ -229,6 +230,7 @@ class SubscriberController extends Controller
             'installation_date' => ['nullable', 'date'],
             'subscription_date' => ['nullable', 'date'],
             'billing_day' => ['nullable', 'integer', 'between:1,31'],
+            'bill_generation_days' => ['sometimes', 'required', 'integer', Rule::in([7, 14])],
             'credit_limit' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
             'service_type' => ['required', 'string', 'max:32'],
             'status' => ['required', 'string', 'max:32'],
@@ -253,7 +255,8 @@ class SubscriberController extends Controller
                 'plan_id' => $data['plan_id'] ?? null,
                 'installation_date' => $data['installation_date'] ?? null,
                 'subscription_date' => $data['subscription_date'] ?? null,
-                'billing_day' => $data['billing_day'] ?? null,
+                'billing_day' => array_key_exists('billing_day', $data) ? $data['billing_day'] : $subscription->billing_day,
+                'bill_generation_days' => $data['bill_generation_days'] ?? $subscription->bill_generation_days ?? 7,
                 'credit_limit' => $data['credit_limit'] ?? 0,
                 'service_type' => $data['service_type'],
                 'status' => $data['status'],
@@ -339,6 +342,7 @@ class SubscriberController extends Controller
         $subscription = $subscriber->subscription;
         $networkAccount = $subscription?->networkAccount;
         $billingDay = $subscription?->billing_day;
+        $billGenerationDays = $subscription?->bill_generation_days ?? 7;
         $installationDate = $subscription?->installation_date ?? $subscription?->subscription_date;
         $dueDate = null;
 
@@ -373,7 +377,7 @@ class SubscriberController extends Controller
                 'MRC' => $subscription?->plan ? 'PHP '.number_format((float) $subscription->plan->price, 2) : null,
                 'Service type' => $subscription?->service_type ? str($subscription->service_type)->headline()->value() : null,
                 'Installation date' => $installationDate?->format('M j, Y'),
-                'Bill generation' => '7 days before due date',
+                'Bill generation' => "{$billGenerationDays} days before due date",
                 'Credit limit' => $subscription ? 'PHP '.number_format((float) $subscription->credit_limit, 2) : null,
                 'Due date' => $dueDate,
                 'Billing status' => $subscription?->status ? str($subscription->status)->headline()->value() : null,

@@ -36,6 +36,7 @@ class StoreSubscriberRequest extends FormRequest
             ],
             'installation_date' => ['nullable', 'date'],
             'billing_day' => ['nullable', 'integer', 'between:1,31'],
+            'bill_generation_days' => ['nullable', 'integer', Rule::in([7, 14])],
             'subscription_date' => ['nullable', 'date'],
             'credit_limit' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
             'pppoe_username' => ['nullable', 'string', 'max:255', Rule::unique('network_accounts', 'username')],
@@ -59,6 +60,7 @@ class StoreSubscriberRequest extends FormRequest
         return [
             'plan_id' => 'plan',
             'billing_day' => 'billing day',
+            'bill_generation_days' => 'bill generation',
             'pppoe_username' => 'PPPoE username',
             'pppoe_password' => 'PPPoE password',
             'pppoe_profile' => 'PPPoE profile',

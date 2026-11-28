@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $plan_id
  * @property Carbon|null $installation_date
  * @property int|null $billing_day
+ * @property int $bill_generation_days
  * @property Carbon|null $subscription_date
  * @property string $credit_limit
  * @property string $service_type
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
     'plan_id',
     'installation_date',
     'billing_day',
+    'bill_generation_days',
     'subscription_date',
     'credit_limit',
     'service_type',
@@ -54,6 +56,7 @@ class Subscription extends Model
         return [
             'installation_date' => 'date',
             'billing_day' => 'integer',
+            'bill_generation_days' => 'integer',
             'subscription_date' => 'date',
             'credit_limit' => 'decimal:2',
         ];

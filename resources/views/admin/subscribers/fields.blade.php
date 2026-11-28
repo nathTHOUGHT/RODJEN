@@ -18,16 +18,6 @@
         $hasError = $errors->has($name);
         $errorId = $id . '-error';
 
-        $autocomplete = match ($name) {
-            'first_name' => 'given-name',
-            'last_name' => 'family-name',
-            'billing_address' => 'street-address',
-            'contact_number' => 'tel',
-            'email' => 'email',
-            'pppoe_password' => 'new-password',
-            'external_url', 'image_url' => 'url',
-            default => 'off',
-        };
         $attribute = $field[5] ?? null;
         $isContactNumber = in_array($name, ['contact_number', 'contact-number', 'Contact number', 'tel'], true);
         $placeholder = match ($name) {
@@ -43,9 +33,10 @@
         @endif
         <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}"
             value="{{ $format === 'uppercase' ? mb_strtoupper($fieldValue) : $fieldValue }}"
-            autocomplete="{{ $autocomplete }}" @required(in_array($name, $requiredFields, true))
+            autocomplete="off" @required(in_array($name, $requiredFields, true))
             aria-label="{{ $label }}" placeholder="{{ $placeholder }}"
             @if ($name === 'account_number') inputmode="numeric" maxlength="8" minlength="8" pattern="[0-9]{8}" data-account-number-input @endif
+            @if ($name === 'installation_date') data-open-date-picker @endif
             @if ($name === 'billing_day') min="1" max="31" @endif
             @if ($name === 'credit_limit') min="0" step="0.01" @endif
             @if ($hasError) aria-invalid="true" aria-describedby="{{ $errorId }}" @endif
@@ -58,7 +49,7 @@
     maxlength="11"
     minlength="11"
     pattern="09[0-9]{9}" @endif
-            class="h-11 w-full min-w-0 rounded-full border bg-white px-4 text-sm font-normal text-slate-900 placeholder:text-slate-400 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $hasError ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }} {{ $name === 'account_number' ? 'pr-12' : '' }}">
+            class="h-11 w-full min-w-0 rounded-full border bg-white px-4 text-sm font-normal text-slate-900 placeholder:text-slate-400 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $hasError ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }} {{ $name === 'account_number' ? 'pr-12' : '' }} {{ $name === 'installation_date' ? 'cursor-pointer' : '' }}">
         @if ($name === 'account_number')
                 <button type="button" data-account-number-generate aria-label="Generate account number" title="Generate account number"
                     class="absolute right-1.5 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-700 hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-cyan-600 disabled:cursor-wait disabled:opacity-50 dark:text-cyan-300 dark:hover:bg-slate-800">

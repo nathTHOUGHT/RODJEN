@@ -93,12 +93,17 @@ test('subscriber details presents the toolbar and information panels in layout o
         ->assertSee('aria-label="Thermal"', false)
         ->assertSee('aria-label="A4 SOA"', false)
         ->assertSee('aria-label="Mark as pulled out"', false)
+        ->assertSee('flex flex-nowrap gap-2 overflow-x-auto', false)
+        ->assertSee('xl:flex-row xl:items-center', false)
+        ->assertSee('xl:ml-auto xl:w-fit xl:flex-none xl:grid-cols-5', false)
+        ->assertSee('xl:w-24', false)
+        ->assertSee('Post-pullout')
+        ->assertSee('title="Reactivate from pullout count"', false)
+        ->assertDontSee('Return to records')
         ->assertDontSee('<img', false)
         ->assertDontSee('<iframe', false)
         ->assertDontSee('<canvas', false);
 
-    $recordsUrl = preg_quote(route('subscribers.index'), '/');
-    expect($response->getContent())->toMatch('/<a\b[^>]*href="'.$recordsUrl.'"[^>]*>\s*Return to\s+records\s*<\/a>/');
 });
 
 test('subscriber detail modals expose blank future fields and disabled mutations', function () {

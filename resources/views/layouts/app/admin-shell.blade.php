@@ -121,6 +121,35 @@
             class="fixed inset-0 z-30 bg-slate-700/30 lg:hidden" aria-label="Close navigation"></button>
     </div>
 
+    <script>
+        (() => {
+            const selector = 'form, input:not([type="password"]), textarea, select';
+
+            const disableAutocomplete = (root) => {
+                if (root instanceof Element && root.matches(selector)) {
+                    root.setAttribute('autocomplete', 'off');
+                }
+
+                root.querySelectorAll(selector).forEach((element) => {
+                    element.setAttribute('autocomplete', 'off');
+                });
+            };
+
+            disableAutocomplete(document);
+
+            new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node instanceof Element) disableAutocomplete(node);
+                    });
+                });
+            }).observe(document.body, {
+                childList: true,
+                subtree: true,
+            });
+        })();
+    </script>
+
     @fluxScripts
 </body>
 

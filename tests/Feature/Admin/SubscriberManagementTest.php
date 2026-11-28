@@ -2,6 +2,7 @@
 
 use App\Models\NetworkAccount;
 use App\Models\Plan;
+use App\Models\Subscriber;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
@@ -71,6 +72,7 @@ test('a preview administrator can store a subscriber and related service data', 
 
     $response = $this->post('/subscriptions/records', subscriberPayload([
         'plan_id' => $plan->id,
+        'bill_generation_days' => 14,
     ]));
 
     $response
@@ -86,6 +88,7 @@ test('a preview administrator can store a subscriber and related service data', 
         'subscriber_id' => 1,
         'plan_id' => $plan->id,
         'billing_day' => 15,
+        'bill_generation_days' => 14,
         'status' => 'active',
     ]);
     $this->assertDatabaseHas('network_accounts', [
@@ -115,6 +118,32 @@ test('subscriber creation accepts the required fields without optional service d
     $this->assertDatabaseHas('subscribers', ['account_number' => '00000001']);
     $this->assertDatabaseHas('subscriptions', ['subscriber_id' => 1, 'plan_id' => null]);
     $this->assertDatabaseHas('network_accounts', ['subscription_id' => 1, 'username' => null]);
+});
+
+test('subscriber bill generation setting is updated and shown in service details', function () {
+    $plan = monthlyPlan();
+    $this->post('/subscriptions/records', subscriberPayload([
+        'plan_id' => $plan->id,
+        'bill_generation_days' => 14,
+    ]))->assertSessionHasNoErrors();
+
+    $subscriber = Subscriber::query()->firstOrFail();
+    $this->patch(route('subscribers.service.update', $subscriber), [
+        'plan_id' => $plan->id,
+        'service_type' => 'fiber',
+        'status' => 'active',
+        'bill_generation_days' => 7,
+    ])->assertRedirect(route('subscribers.details', $subscriber));
+
+    $this->assertDatabaseHas('subscriptions', [
+        'subscriber_id' => $subscriber->id,
+        'billing_day' => 15,
+        'bill_generation_days' => 7,
+    ]);
+
+    $this->get(route('subscribers.details', $subscriber))
+        ->assertOk()
+        ->assertSeeInOrder(['Bill generation', '7 days before due date']);
 });
 
 test('subscriber account numbers require exactly eight digits', function () {

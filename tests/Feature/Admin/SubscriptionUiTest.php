@@ -44,9 +44,12 @@ test('add subscriber renders a database-backed form with monthly plans', functio
         ->assertSee('Coordinates')
         ->assertSee('name="external_url"', false)
         ->assertSee('aria-label="External URL"', false)
+        ->assertSee('autocomplete="off"', false)
         ->assertSee('Installation date')
         ->assertSee('Plan')
-        ->assertSee('Due date day (1–31)')
+        ->assertSee('aria-label="Bill Generation"', false)
+        ->assertSee('Standard (7 days)')
+        ->assertSee('Early (14 days)')
         ->assertSee('Remarks')
         ->assertSee('External URL')
         ->assertSee('PPPoE name')
@@ -75,6 +78,8 @@ test('add subscriber renders a database-backed form with monthly plans', functio
         ->assertSee('type="submit"', false)
         ->assertDontSee('data-ui-only-form', false)
         ->assertDontSee('data-test="subscriber-create-disabled"', false);
+
+    expect($response->getContent())->toMatch('/<option value="7" selected(?:="selected")?>Standard \(7 days\)<\/option>/');
 });
 
 test('add subscriber exposes an external URL field in personal details', function () {
@@ -119,12 +124,14 @@ test('account number form input is limited to eight digits and has a generator',
         ->assertSee('aria-label="Account number"', false)
         ->assertSee('aria-label="First name"', false)
         ->assertSee('aria-label="Plan"', false)
+        ->assertSee('data-open-date-picker', false)
         ->assertSee('<path d="M12 5v14M5 12h14" />', false)
         ->assertSee('placeholder="Account No."', false)
         ->assertSee('placeholder="Mobile No."', false)
         ->assertSee('placeholder="Enter first name"', false)
         ->assertSee('placeholder="Enter email address"', false)
-        ->assertSeeInOrder(['name="installation_date"', 'name="plan_id"', 'name="billing_day"'], false)
+        ->assertSeeInOrder(['name="installation_date"', 'name="bill_generation_days"', 'name="plan_id"'], false)
+        ->assertDontSee('<label for="bill-generation"', false)
         ->assertDontSee('<label for="account-number"', false)
         ->assertDontSee('<label for="plan"', false);
 });

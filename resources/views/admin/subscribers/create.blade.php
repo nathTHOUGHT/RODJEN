@@ -17,7 +17,6 @@
             [['external_url', 'external-url', 'External URL', 'url']],
         ];
         $installationFields = [['installation_date', 'installation-date', 'Installation date', 'date']];
-        $subscriptionFields = [['billing_day', 'due-date-day', 'Due date day (1–31)', 'number']];
         $mikrotikFields = [
             ['pppoe_username', 'pppoe-name', 'PPPoE name', 'text'],
             ['pppoe_password', 'pppoe-password', 'PPPoE password', 'text'],
@@ -58,30 +57,41 @@
             <div class="min-w-0 space-y-4">
                 <x-admin.panel title="Subscription Configuration">
                     <div class="grid gap-3">
-                        @php
-                            $oldPlanId = old('plan_id');
-                        @endphp
                         <div class="grid gap-3 sm:grid-cols-2 sm:items-start">
                             @include('admin.subscribers.fields', ['fields' => $installationFields])
+
                             <div class="grid min-w-0 gap-1.5">
-                                <select id="plan" name="plan_id" aria-label="Plan"
-                                    @if ($errors->has('plan_id')) aria-invalid="true" aria-describedby="plan-error" @endif
-                                    class="h-11 w-full min-w-0 rounded-full border bg-white px-4 text-sm font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('plan_id') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}">
-                                    <option value="">No plan assigned</option>
-                                    @foreach ($plans as $plan)
-                                        <option value="{{ $plan->id }}" @selected(is_scalar($oldPlanId) && (string) $oldPlanId === (string) $plan->id)>
-                                            {{ $plan->name }} —
-                                            {{ $plan->speed_mbps ? number_format($plan->speed_mbps) . ' Mbps · ' : '' }}PHP
-                                            {{ number_format((float) $plan->price, 2) }}
-                                        </option>
-                                    @endforeach
+                                <select id="bill-generation" name="bill_generation_days" required
+                                    aria-label="Bill Generation"
+                                    @if ($errors->has('bill_generation_days')) aria-invalid="true" aria-describedby="bill-generation-error" @endif
+                                    class="h-11 w-full min-w-0 rounded-full border bg-white px-4 text-sm font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('bill_generation_days') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}">
+                                    <option value="7" @selected((string) old('bill_generation_days', '7') === '7')>Standard (7 days)</option>
+                                    <option value="14" @selected((string) old('bill_generation_days', '7') === '14')>Early (14 days)</option>
                                 </select>
-                                @error('plan_id')
-                                    <span id="plan-error" class="text-sm text-red-600">{{ $message }}</span>
+                                @error('bill_generation_days')
+                                    <span id="bill-generation-error" class="text-sm text-red-600">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
-                        @include('admin.subscribers.fields', ['fields' => $subscriptionFields])
+
+                        @php($oldPlanId = old('plan_id'))
+                        <div class="grid min-w-0 gap-1.5">
+                            <select id="plan" name="plan_id" aria-label="Plan"
+                                @if ($errors->has('plan_id')) aria-invalid="true" aria-describedby="plan-error" @endif
+                                class="h-11 w-full min-w-0 rounded-full border bg-white px-4 text-sm font-normal text-slate-900 focus-visible:outline-2 focus-visible:outline-cyan-600 dark:bg-slate-950 dark:text-white {{ $errors->has('plan_id') ? 'border-red-500' : 'border-slate-300 dark:border-slate-700' }}">
+                                <option value="">No plan assigned</option>
+                                @foreach ($plans as $plan)
+                                    <option value="{{ $plan->id }}" @selected(is_scalar($oldPlanId) && (string) $oldPlanId === (string) $plan->id)>
+                                        {{ $plan->name }} —
+                                        {{ $plan->speed_mbps ? number_format($plan->speed_mbps) . ' Mbps · ' : '' }}PHP
+                                        {{ number_format((float) $plan->price, 2) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('plan_id')
+                                <span id="plan-error" class="text-sm text-red-600">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
                 </x-admin.panel>
 
@@ -103,6 +113,11 @@
 
         <script>
             document.addEventListener('click', async function(event) {
+                const dateInput = event.target.closest('[data-open-date-picker]');
+                if (dateInput && typeof dateInput.showPicker === 'function') {
+                    dateInput.showPicker();
+                }
+
                 const button = event.target.closest('[data-account-number-generate]');
                 if (!button) return;
 

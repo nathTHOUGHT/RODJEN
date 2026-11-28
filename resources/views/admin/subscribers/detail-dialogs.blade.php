@@ -59,7 +59,7 @@
     id="subscriber-service-edit-dialog"
     aria-labelledby="subscriber-service-edit-title"
     class="{{ $dialogClasses }}"
-    @if ($errors->hasAny(['plan_id', 'installation_date', 'subscription_date', 'billing_day', 'credit_limit', 'service_type', 'status'])) x-init="$el.showModal()" @endif
+    @if ($errors->hasAny(['plan_id', 'installation_date', 'subscription_date', 'billing_day', 'bill_generation_days', 'credit_limit', 'service_type', 'status'])) x-init="$el.showModal()" @endif
 >
     <h2 id="subscriber-service-edit-title" class="text-lg font-semibold">Edit Service Details</h2>
 
@@ -111,9 +111,12 @@
                 @enderror
             </label>
             <label class="{{ $labelClasses }}">
-                Due date day (1–31)
-                <input name="billing_day" type="number" min="1" max="31" value="{{ old('billing_day', $subscription?->billing_day) }}" class="{{ $fieldClasses }}">
-                @error('billing_day')
+                Bill Generation
+                <select name="bill_generation_days" required class="{{ $fieldClasses }}">
+                    <option value="7" @selected((string) old('bill_generation_days', $subscription?->bill_generation_days ?? 7) === '7')>Standard (7 days)</option>
+                    <option value="14" @selected((string) old('bill_generation_days', $subscription?->bill_generation_days ?? 7) === '14')>Early (14 days)</option>
+                </select>
+                @error('bill_generation_days')
                     <span role="alert" class="text-sm font-normal text-red-600">{{ $message }}</span>
                 @enderror
             </label>
